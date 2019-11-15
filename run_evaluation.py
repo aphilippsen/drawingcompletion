@@ -4,6 +4,10 @@ import matplotlib.pyplot as plt
 import pathlib
 
 
+# data_set_name = '2019-11-05'
+# data_set_name = '2019-11-08'
+data_set_name = '2019-11-all'
+
 # Evaluation of the inference results
 # when train and test hyp-prior vary!
 #
@@ -11,9 +15,10 @@ import pathlib
 
 training_data_file = "data/drawing-data-sets/drawings-191105-6-drawings.npy"
 
-eval_head_dir = './results/completion'
-mode = 'best'
-training_hyp = '1'
+eval_head_dir = './results/completion/' + data_set_name
+mode = 'inference'
+#training_hyp = '10'
+training_hyp = 'corresponding' # use the same training = test_hyp!
 
 # this code is only for one reduced_time_steps at a time!
 reduced = 0 # which array entry to read
@@ -29,10 +34,10 @@ corr_new = np.empty((len(test_hyp_all), 1), dtype=object)
 
 results = np.empty((len(test_hyp_all), 1), dtype=object)
 
-plot_dir = "./results/evaluation/"+ mode + '-' + training_hyp
+plot_dir = "./results/evaluation/" + data_set_name + '/' + mode + '-' + training_hyp
 pathlib.Path(plot_dir).mkdir(parents=True, exist_ok=True)
 
-num_runs = 5 # how often the experiment was independently conducted
+num_runs = 10 # how often the experiment was independently conducted
 num_inferences = 10 # how many test inferences have been performed in each run
 num_patterns = 6 # number of different training sample patterns
 
@@ -56,7 +61,12 @@ for test_hyp in test_hyp_all:
         run_idx += num_inferences
         print("Current run index: " + str(run_idx))
         current_run = os.path.join(eval_head_dir, dir_list[curr_r])
-        eval_dir = current_run+'/'+training_hyp+'/'+mode+'/test-'+test_hyp
+        if training_hyp == 'corresponding':
+            train_hyp_dir = test_hyp
+        else:
+            train_hyp_dir = training_hyp
+            
+        eval_dir = current_run+'/'+train_hyp_dir+'/'+mode+'/test-'+test_hyp
 
         # load precomputed errors
         err_best_vis = np.load(os.path.join(eval_dir, 'final-err_vis_best-' + str(test_hyp) + '_mode-' + mode + '.npy'))
@@ -120,7 +130,7 @@ output_format = "png"
 # pattern_category = ['FACE', 'HOUSE', 'FLOWER']
 
 # for six patterns
-x = [[0.35, 2.35, 4.35, 6.35, 8.35], [0.4, 2.4, 4.4, 6.4, 8.4], [0.45, 2.45, 4.45, 6.45, 8.45], [0.5, 2.5, 4.5, 6.5, 8.5], [0.55, 2.55, 4.55, 6.55, 8.55], [0.6, 2.6, 4.6, 4.6, 8.6]]
+x = [[0.05, 2.05, 4.05, 6.05, 8.05], [0.3, 2.3, 4.3, 6.3, 8.3], [0.55, 2.55, 4.55, 6.55, 8.55], [0.8, 2.8, 4.8, 6.8, 8.8], [1.05, 3.05, 5.05, 7.05, 9.05], [1.3, 3.3, 5.3, 7.3, 9.3]]
 colors = ['red', 'orange', 'green', 'blue', 'gray', 'black']
 pattern_category = ['FACE', 'HOUSE', 'CAR', 'FLOWER', 'HUMAN', 'ROCKET']
 
@@ -132,40 +142,43 @@ for num_t in range(num_test_hyp):
 
 orientation_y_line = np.tile(0.005, (2,)) # np.max(vis_corr[1])
 
-
-
 # separate drawings for each pattern
 fig = plt.figure('New_best', figsize=(35.0, 12.0))
 plt.rcParams.update({'font.size': 50, 'legend.fontsize': 40})
 ax = fig.add_subplot(111)
 ax.set_xlabel('prior parameter condition')
 ax.set_ylabel('Drawing error (DTW distance)')
-ax.set_xlim([-0.2, 9.2])
-ax.set_ylim([-0.002, 0.05])
-plt.plot([-1, 10], orientation_y_line-0.005, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.005, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.01, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.015, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.02, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.025, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.03, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.035, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.04, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.045, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.05, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.055, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.06, 'lightgray', zorder=0, linewidth=5)
+
+for line_offset in np.arange(-0.005, 0.061, 0.005):
+    plt.plot([-1, 11], orientation_y_line+line_offset, 'lightgray', zorder=0, linewidth=5)
+
 for pat in range(num_patterns):
     for bla in range(len(x[pat])):
+
+        median_value = np.percentile(best_new[bla][0][:,pat], 50)
+        upper_quantile = np.percentile(best_new[bla][0][:,pat], 90)
+        lower_quantile = np.percentile(best_new[bla][0][:,pat], 10)
+        lower_std_dev = np.mean(best_new[bla][0][:,pat]) - np.sqrt(np.var(best_new[bla][0][:,pat]))
+        upper_std_dev = np.mean(best_new[bla][0][:,pat]) + np.sqrt(np.var(best_new[bla][0][:,pat]))
+
+        ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=2), medianprops=dict(color=colors[pat], linewidth=2), flierprops=dict(color=colors[pat], linewidth=2), whiskerprops=dict(color=colors[pat], linewidth=2), capprops=dict(color=colors[pat], linewidth=2))
+
         if bla == 0:
-            ax.scatter(np.repeat(x[pat][bla], len(best_new[bla][0][:,pat])), best_new[bla][0][:,pat], color=colors[pat], label=pattern_category[pat])
+            ax.scatter(np.repeat(x[pat][bla], len(best_new[bla][0][:,pat])), best_new[bla][0][:,pat], linewidth=2, color=colors[pat], label=pattern_category[pat])
         else:
-            ax.scatter(np.repeat(x[pat][bla], len(best_new[bla][0][:,pat])), best_new[bla][0][:,pat], color=colors[pat])
+            ax.scatter(np.repeat(x[pat][bla], len(best_new[bla][0][:,pat])), best_new[bla][0][:,pat], linewidth=2, color=colors[pat])
+
+
+#        ax.scatter(x[pat][bla], median_best_new, color=colors[pat], marker='s', s=1000)
+#        ax.scatter(x[pat][bla], upper_best_new, color=colors[pat], marker='s', s=1000)
+#        ax.scatter(x[pat][bla], lower_best_new, color=colors[pat], marker='s', s=1000)
+
     # ax.errorbar(x[pat], best_new_means[:,pat], yerr=best_new_std[:,pat], color=colors[pat], ecolor=colors[pat], fmt='o', markersize=20, capsize=15, capthick=5, elinewidth=5, barsabove=True, label=pattern_category[pat])
-    if pat == 1:
-        plt.xticks(x[pat], my_xticks)
-fig.legend(loc=(0.17, 0.47))
+
+plt.xticks(x[2], my_xticks)
+ax.set_xlim([-0.2, 11.0])
+ax.set_ylim([-0.002, 0.05])
+fig.legend(loc=(0.855, 0.47))
 fig.tight_layout()
 plt.savefig(os.path.join(plot_dir, 'completion_new-part_best.' + output_format))
 plt.close()
@@ -175,32 +188,30 @@ plt.rcParams.update({'font.size': 50, 'legend.fontsize': 40})
 ax = fig.add_subplot(111)
 ax.set_xlabel('prior parameter condition')
 ax.set_ylabel('Drawing error (DTW distance)')
-ax.set_xlim([-0.2, 9.2])
-ax.set_ylim([-0.002, 0.05])
-plt.plot([-1, 10], orientation_y_line-0.005, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.005, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.01, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.015, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.02, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.025, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.03, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.035, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.04, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.045, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.05, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.055, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.06, 'lightgray', zorder=0, linewidth=5)
+
+for line_offset in np.arange(-0.005, 0.061, 0.005):
+    plt.plot([-1, 11], orientation_y_line+line_offset, 'lightgray', zorder=0, linewidth=5)
 for pat in range(num_patterns):
     for bla in range(len(x[pat])):
+
+        median_value = np.percentile(corr_new[bla][0][:,pat], 50)
+        upper_quantile = np.percentile(corr_new[bla][0][:,pat], 90)
+        lower_quantile = np.percentile(corr_new[bla][0][:,pat], 10)
+        lower_std_dev = np.mean(corr_new[bla][0][:,pat]) - np.sqrt(np.var(corr_new[bla][0][:,pat]))
+        upper_std_dev = np.mean(corr_new[bla][0][:,pat]) + np.sqrt(np.var(corr_new[bla][0][:,pat]))
+
+        ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=2), medianprops=dict(color=colors[pat], linewidth=2), flierprops=dict(color=colors[pat], linewidth=2), whiskerprops=dict(color=colors[pat], linewidth=2), capprops=dict(color=colors[pat], linewidth=2))
+
+
         if bla == 0:
             ax.scatter(np.repeat(x[pat][bla], len(corr_new[bla][0][:,pat])), corr_new[bla][0][:,pat], color=colors[pat], label=pattern_category[pat])
         else:
             ax.scatter(np.repeat(x[pat][bla], len(corr_new[bla][0][:,pat])), corr_new[bla][0][:,pat], color=colors[pat])
     # ax.errorbar(x[pat], corr_new_means[:,pat], yerr=corr_new_std[:,pat], color=colors[pat], ecolor=colors[pat], fmt='o', markersize=20, capsize=10, capthick=5, elinewidth=5, barsabove=True, label=pattern_category[pat])
-    if pat == 1:
-        plt.xticks(x[pat], my_xticks)
-fig.legend(loc=(0.17, 0.47))
+plt.xticks(x[2], my_xticks)
+ax.set_xlim([-0.2, 11.0])
+ax.set_ylim([-0.002, 0.05])
+fig.legend(loc=(0.855, 0.47))
 fig.tight_layout()
 plt.savefig(os.path.join(plot_dir,'completion_new-part_correct.' + output_format))
 plt.close()
@@ -210,32 +221,30 @@ plt.rcParams.update({'font.size': 50, 'legend.fontsize': 40})
 ax = fig.add_subplot(111)
 ax.set_xlabel('prior parameter condition')
 ax.set_ylabel('Drawing error (DTW distance)')
-ax.set_xlim([-0.2, 9.2])
-ax.set_ylim([-0.002, 0.05])
-plt.plot([-1, 10], orientation_y_line-0.005, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.005, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.01, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.015, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.02, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.025, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.03, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.035, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.04, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.045, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.05, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.055, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.06, 'lightgray', zorder=0, linewidth=5)
+
+for line_offset in np.arange(-0.005, 0.061, 0.005):
+    plt.plot([-1, 11], orientation_y_line+line_offset, 'lightgray', zorder=0, linewidth=5)
+
 for pat in range(num_patterns):
     for bla in range(len(x[pat])):
+
+        median_value = np.percentile(best_vis[bla][0][:,pat], 50)
+        upper_quantile = np.percentile(best_vis[bla][0][:,pat], 90)
+        lower_quantile = np.percentile(best_vis[bla][0][:,pat], 10)
+        lower_std_dev = np.mean(best_vis[bla][0][:,pat]) - np.sqrt(np.var(best_vis[bla][0][:,pat]))
+        upper_std_dev = np.mean(best_vis[bla][0][:,pat]) + np.sqrt(np.var(best_vis[bla][0][:,pat]))
+
+        ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=2), medianprops=dict(color=colors[pat], linewidth=2), flierprops=dict(color=colors[pat], linewidth=2), whiskerprops=dict(color=colors[pat], linewidth=2), capprops=dict(color=colors[pat], linewidth=2))
+
         if bla == 0:
             ax.scatter(np.repeat(x[pat][bla], len(best_vis[bla][0][:,pat])), best_vis[bla][0][:,pat], color=colors[pat], label=pattern_category[pat])
         else:
             ax.scatter(np.repeat(x[pat][bla], len(best_vis[bla][0][:,pat])), best_vis[bla][0][:,pat], color=colors[pat])
     # ax.errorbar(x[pat], best_vis_means[:,pat], yerr=best_vis_std[:,pat], color=colors[pat], ecolor=colors[pat], fmt='o', markersize=20, capsize=15, capthick=5, elinewidth=5, barsabove=True, label=pattern_category[pat])
-    if pat == 1:
-        plt.xticks(x[pat], my_xticks)
-fig.legend(loc=(0.17, 0.47))
+plt.xticks(x[2], my_xticks)
+ax.set_xlim([-0.2, 11.0])
+ax.set_ylim([-0.002, 0.05])
+fig.legend(loc=(0.855, 0.47))
 fig.tight_layout()
 plt.savefig(os.path.join(plot_dir,'completion_visible-part_best.' + output_format))
 plt.close()
@@ -245,32 +254,30 @@ plt.rcParams.update({'font.size': 50, 'legend.fontsize': 40})
 ax = fig.add_subplot(111)
 ax.set_xlabel('prior parameter condition')
 ax.set_ylabel('Drawing error (DTW distance)')
-ax.set_xlim([-0.2, 9.2])
-ax.set_ylim([-0.002, 0.05])
-plt.plot([-1, 10], orientation_y_line-0.005, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.005, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.01, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.015, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.02, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.025, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.03, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.035, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.04, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.045, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.05, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.055, 'lightgray', zorder=0, linewidth=5)
-plt.plot([-1, 10], orientation_y_line+0.06, 'lightgray', zorder=0, linewidth=5)
+
+for line_offset in np.arange(-0.005, 0.061, 0.005):
+    plt.plot([-1, 11], orientation_y_line+line_offset, 'lightgray', zorder=0, linewidth=5)
+
 for pat in range(num_patterns):
     for bla in range(len(x[pat])):
+
+        median_value = np.percentile(corr_vis[bla][0][:,pat], 50)
+        upper_quantile = np.percentile(corr_vis[bla][0][:,pat], 90)
+        lower_quantile = np.percentile(corr_vis[bla][0][:,pat], 10)
+        lower_std_dev = np.mean(corr_vis[bla][0][:,pat]) - np.sqrt(np.var(corr_vis[bla][0][:,pat]))
+        upper_std_dev = np.mean(corr_vis[bla][0][:,pat]) + np.sqrt(np.var(corr_vis[bla][0][:,pat]))
+
+        ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=2), medianprops=dict(color=colors[pat], linewidth=2), flierprops=dict(color=colors[pat], linewidth=2), whiskerprops=dict(color=colors[pat], linewidth=2), capprops=dict(color=colors[pat], linewidth=2))
+
         if bla == 0:
             ax.scatter(np.repeat(x[pat][bla], len(corr_vis[bla][0][:,pat])), corr_vis[bla][0][:,pat], color=colors[pat], label=pattern_category[pat])
         else:
             ax.scatter(np.repeat(x[pat][bla], len(corr_vis[bla][0][:,pat])), corr_vis[bla][0][:,pat], color=colors[pat])
     # ax.errorbar(x[pat], corr_vis_means[:,pat], yerr=corr_vis_std[:,pat], color=colors[pat], ecolor=colors[pat], fmt='o', markersize=20, capsize=10, capthick=5, elinewidth=5, barsabove=True, label=pattern_category[pat])
-    if pat == 1:
-        plt.xticks(x[pat], my_xticks)
-fig.legend(loc=(0.17, 0.47))
+plt.xticks(x[2], my_xticks)
+ax.set_xlim([-0.2, 11.0])
+ax.set_ylim([-0.002, 0.05])
+fig.legend(loc=(0.855, 0.47))
 fig.tight_layout()
 plt.savefig(os.path.join(plot_dir, 'completion_visible-part_correct.' + output_format))
 plt.close()
@@ -361,7 +368,7 @@ for curr_r in range(num_runs):
 
                     curr_subplot += 1
             plt.tight_layout()
-            plt.savefig(os.path.join(plot_dir, 'Qualitative-' + str(test_hyp_all[test_hyp_condition]) + "_run-" + str(curr_r) + "_" + str(image_idx) + fileformat))
+            plt.savefig(os.path.join(plot_dir, 'Qualitative-' + str(test_hyp_all[test_hyp_condition]) + "_run-" + dir_list[curr_r] + "_" + str(image_idx) + fileformat))
             image_idx += 1
             plt.close()
 #

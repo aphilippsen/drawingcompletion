@@ -29,6 +29,9 @@ else:
     print("Use CPU!")
     gpu_id = -1
 
+#data_set_name = '2019-11-05'
+data_set_name = '2019-11-08'
+
 # trajectory data
 # training_data_file = "/home/anja/repos/cognitivemirroring/ChainerRNN/data/drawings/multi-stroke/drawings-190215-faces-houses-flowers.npy"
 # training_data_file_classes = "/home/anja/repos/cognitivemirroring/ChainerRNN/data/drawings/multi-stroke/"
@@ -67,21 +70,23 @@ info += is_selection_mode
 # where to find the training networks
 head_directory = "./results"
 
-training_dir = os.path.join(head_directory, "training")
-inference_dir = os.path.join(head_directory, "completion")
+training_dir = os.path.join(head_directory, "training/"+data_set_name)
+completion_dir = os.path.join(head_directory, "completion/"+data_set_name)
 
 run_directories = next(os.walk(training_dir))[1]
-for r in range(len(run_directories)):
-    run_dir = os.path.join(training_dir, run_directories[r])
+for current_r in range(len(run_directories)):
+    run_dir = os.path.join(training_dir, run_directories[current_r])
 
     # which training parameter conditions to check
-    condition_directories = ['0.01', '0.1', '1', '10', '100']
+    condition_directories = ['0.01', '0.1', '1', '10']#, '100']
 
-    for c in range(len(condition_directories)):
-        network_dir = os.path.join(run_dir, condition_directories[c])
-        inference_results_dir = os.path.join(os.path.join(inference_dir, run_directories[r]), condition_directories[c])
+    for current_c in range(len(condition_directories)):
+        network_dir = os.path.join(run_dir, condition_directories[current_c])
+        inference_results_dir = os.path.join(os.path.join(completion_dir, run_directories[current_r]), condition_directories[current_c])
         pathlib.Path(inference_results_dir).mkdir(parents=True, exist_ok=True)
 
+        # TODO: manually labeled now the best in './results/training/2019-11-08_15-35_0902631/100'
+        # TODO: there is no "best" network sometimes!!!
         params, model = load_network(network_dir, model_filename='network-epoch-best.npz')
 
         # which hyp_prior condition to use for testing:
