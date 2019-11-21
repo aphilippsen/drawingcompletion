@@ -17,8 +17,8 @@ training_data_file = "data/drawing-data-sets/drawings-191105-6-drawings.npy"
 
 eval_head_dir = './results/completion/' + data_set_name
 mode = 'inference'
-#training_hyp = '10'
-training_hyp = 'corresponding' # use the same training = test_hyp!
+training_hyp = '1'
+#training_hyp = 'corresponding' # use the same training = test_hyp!
 
 # this code is only for one reduced_time_steps at a time!
 reduced = 0 # which array entry to read
@@ -120,7 +120,7 @@ for num_t in range(num_test_hyp):
 ######################################
 
 # in a single window with different colors for the patterns
-output_format = "png"
+output_format = "pdf"
 # prepare the positions on the x axis
 # x = [0, 1, 2, 3, 4]
 
@@ -161,7 +161,7 @@ for pat in range(num_patterns):
         lower_std_dev = np.mean(best_new[bla][0][:,pat]) - np.sqrt(np.var(best_new[bla][0][:,pat]))
         upper_std_dev = np.mean(best_new[bla][0][:,pat]) + np.sqrt(np.var(best_new[bla][0][:,pat]))
 
-        ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=2), medianprops=dict(color=colors[pat], linewidth=2), flierprops=dict(color=colors[pat], linewidth=2), whiskerprops=dict(color=colors[pat], linewidth=2), capprops=dict(color=colors[pat], linewidth=2))
+        ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=2), medianprops=dict(color=colors[pat], linewidth=2), flierprops=dict(color=colors[pat], linewidth=2), whiskerprops=dict(color=colors[pat], linewidth=2), capprops=dict(color=colors[pat], linewidth=2), showfliers=False)
 
         if bla == 0:
             ax.scatter(np.repeat(x[pat][bla], len(best_new[bla][0][:,pat])), best_new[bla][0][:,pat], linewidth=2, color=colors[pat], label=pattern_category[pat])
@@ -200,7 +200,7 @@ for pat in range(num_patterns):
         lower_std_dev = np.mean(corr_new[bla][0][:,pat]) - np.sqrt(np.var(corr_new[bla][0][:,pat]))
         upper_std_dev = np.mean(corr_new[bla][0][:,pat]) + np.sqrt(np.var(corr_new[bla][0][:,pat]))
 
-        ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=2), medianprops=dict(color=colors[pat], linewidth=2), flierprops=dict(color=colors[pat], linewidth=2), whiskerprops=dict(color=colors[pat], linewidth=2), capprops=dict(color=colors[pat], linewidth=2))
+        ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=2), medianprops=dict(color=colors[pat], linewidth=2), flierprops=dict(color=colors[pat], linewidth=2), whiskerprops=dict(color=colors[pat], linewidth=2), capprops=dict(color=colors[pat], linewidth=2), showfliers=False)
 
 
         if bla == 0:
@@ -234,7 +234,7 @@ for pat in range(num_patterns):
         lower_std_dev = np.mean(best_vis[bla][0][:,pat]) - np.sqrt(np.var(best_vis[bla][0][:,pat]))
         upper_std_dev = np.mean(best_vis[bla][0][:,pat]) + np.sqrt(np.var(best_vis[bla][0][:,pat]))
 
-        ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=2), medianprops=dict(color=colors[pat], linewidth=2), flierprops=dict(color=colors[pat], linewidth=2), whiskerprops=dict(color=colors[pat], linewidth=2), capprops=dict(color=colors[pat], linewidth=2))
+        ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=2), medianprops=dict(color=colors[pat], linewidth=2), flierprops=dict(color=colors[pat], linewidth=2), whiskerprops=dict(color=colors[pat], linewidth=2), capprops=dict(color=colors[pat], linewidth=2), showfliers=False)
 
         if bla == 0:
             ax.scatter(np.repeat(x[pat][bla], len(best_vis[bla][0][:,pat])), best_vis[bla][0][:,pat], color=colors[pat], label=pattern_category[pat])
@@ -267,7 +267,7 @@ for pat in range(num_patterns):
         lower_std_dev = np.mean(corr_vis[bla][0][:,pat]) - np.sqrt(np.var(corr_vis[bla][0][:,pat]))
         upper_std_dev = np.mean(corr_vis[bla][0][:,pat]) + np.sqrt(np.var(corr_vis[bla][0][:,pat]))
 
-        ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=2), medianprops=dict(color=colors[pat], linewidth=2), flierprops=dict(color=colors[pat], linewidth=2), whiskerprops=dict(color=colors[pat], linewidth=2), capprops=dict(color=colors[pat], linewidth=2))
+        ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=2), medianprops=dict(color=colors[pat], linewidth=2), flierprops=dict(color=colors[pat], linewidth=2), whiskerprops=dict(color=colors[pat], linewidth=2), capprops=dict(color=colors[pat], linewidth=2), showfliers=False)
 
         if bla == 0:
             ax.scatter(np.repeat(x[pat][bla], len(corr_vis[bla][0][:,pat])), corr_vis[bla][0][:,pat], color=colors[pat], label=pattern_category[pat])
@@ -304,7 +304,7 @@ num_classes = 6
 # fileformat = '.pdf'
 # traj_lengths_to_plot=[90]
 # # for video animation
-fileformat = '.png'
+fileformat = '.pdf'
 
 image_idx_start = 0 # required if different lengths should be plot for making a video
 # traj_lengths_to_plot= np.concatenate((np.arange(num_timesteps), np.tile(90, (200,))))

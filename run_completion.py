@@ -30,7 +30,8 @@ else:
     gpu_id = -1
 
 #data_set_name = '2019-11-05'
-data_set_name = '2019-11-08'
+#data_set_name = '2019-11-all'
+data_set_name = "2019-11-all"
 
 # trajectory data
 # training_data_file = "/home/anja/repos/cognitivemirroring/ChainerRNN/data/drawings/multi-stroke/drawings-190215-faces-houses-flowers.npy"
@@ -55,8 +56,8 @@ var_integration = 2
 # Which initial state to use for generation
 # is_selection_mode = 'zero' # take zero vector
 # is_selection_mode = 'mean' # take the mean of all training initial states
-is_selection_mode = 'best' # try all available initial states and use the one that best replicates the existing part
-# is_selection_mode = 'inference' # use backpropagation inference to infer the best fitting initial states
+#is_selection_mode = 'best' # try all available initial states and use the one that best replicates the existing part
+is_selection_mode = 'inference' # use backpropagation inference to infer the best fitting initial states
 
 inference_epochs=2000
 drawings_per_class = 10
@@ -78,7 +79,7 @@ for current_r in range(len(run_directories)):
     run_dir = os.path.join(training_dir, run_directories[current_r])
 
     # which training parameter conditions to check
-    condition_directories = ['0.01', '0.1', '1', '10']#, '100']
+    condition_directories = ['10'] #, '1', '10', '100']
 
     for current_c in range(len(condition_directories)):
         network_dir = os.path.join(run_dir, condition_directories[current_c])
@@ -90,7 +91,7 @@ for current_r in range(len(run_directories)):
         params, model = load_network(network_dir, model_filename='network-epoch-best.npz')
 
         # which hyp_prior condition to use for testing:
-        test_hyp_priors = [0.01, 0.1, 1, 10, 100]
+        test_hyp_priors = [0.001, 1000]
 
         # do the inference and generation for all testing hyp_prior values, and for all training trajectories
         for hyp_prior in test_hyp_priors:

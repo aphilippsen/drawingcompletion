@@ -100,14 +100,14 @@ use_derivatives = False
 #implicit_trajectory_noise_runs = [0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001]
 #implicit_trajectory_noise_runs = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 #implicit_trajectory_noise_runs = [0, 0, 0, 1e-5, 1e-5, 1e-5, 0.0001, 0.0001, 0.0001, 0.001, 0.001, 0.001]
-implicit_trajectory_noise_runs = [0, 0, 0, 0, 0]#,0,0,0,0,0]
+implicit_trajectory_noise_runs = [0]#, 0]#, 0, 0, 0]#,0,0,0,0,0]
 # runs = len(implicit_trajectory_noise_runs)
 
 # Explicit sensor noise that has influence on BI
 # explicit_sensor_variance_runs = [0.0001, 0.0001, 0.0001]
 #explicit_sensor_variance_runs = [1e-4, 1e-4, 1e-4, 0.001, 0.001, 0.001, 0.01, 0.01, 0.01]
 #explicit_sensor_variance_runs = [0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001]
-explicit_sensor_variance_runs = [0.001, 0.001, 0.001, 0.001, 0.001]#, 0.001, 0.001, 0.001, 0.001, 0.001]
+explicit_sensor_variance_runs = [0.001]#, 0.001]#, 0.001, 0.001, 0.001]#, 0.001, 0.001, 0.001, 0.001, 0.001]
 # runs = len(explicit_sensor_variance_runs)
 
 # whether to add the explicit_sensor_variance to the training signal
@@ -117,7 +117,63 @@ add_smooth_traj_noise = False
 
 # Hypo prior that influences BI
 #hyp_prior_runs =  [0.3, 0.5, 0.9, 1, 2, 5]
-hyp_prior_runs = [0.01, 0.1, 1, 10, 100] #[0.01, 1, 50]
+hyp_prior_runs = [0.001, 0.01, 0.1, 1, 10, 100, 1000] #[0.01, 1, 50]
+# hyp_prior_runs= [0.001]
+
+# If True, define init_weight_dir here, otherwise generate new initial weights
+reuse_existing_weights = True
+
+# 1000
+
+# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-05_14-34_0970831/initialWeights"
+# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_15-55_0480074
+#init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-05_14-35_0321645/initialWeights"
+# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-02_0579644
+# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-05_14-35_0421490/initialWeights"
+# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-02_0911090
+#init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-05_14-35_0786428/initialWeights"
+# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-03_0361625
+# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-05_14-36_0715535/initialWeights"
+# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-03_0552937
+# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-08_15-35_0902631/initialWeights"
+# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-04_0152981
+# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-08_15-36_0061932/initialWeights"
+# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-04_0418418
+# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-08_15-36_0110189/initialWeights"
+# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-05_0887558
+# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-08_15-36_0712878/initialWeights"
+# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-05_0096949
+# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-08_15-36_0818585/initialWeights"
+# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-06_0786867
+
+
+
+# 0.001
+
+# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-05_14-34_0970831/initialWeights"
+# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-09_0845833
+#init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-05_14-35_0321645/initialWeights"
+# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-10_0991327
+# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-05_14-35_0421490/initialWeights"
+# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-11_0506551
+# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-05_14-35_0786428/initialWeights"
+# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-11_0852766
+# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-05_14-36_0715535/initialWeights"
+# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-11_0307238
+# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-08_15-35_0902631/initialWeights"
+# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-13_0425077
+# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-08_15-36_0061932/initialWeights"
+# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-13_0558169
+# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-08_15-36_0110189/initialWeights"
+# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-14_0034660
+# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-08_15-36_0712878/initialWeights"
+# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-14_0537299
+# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-08_15-36_0818585/initialWeights"
+# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-15_0238757
+
+
+
+
 
 # hyp_prior_runs = [1000.01, 1000.1, 1001, 1010, 1100]
 
@@ -157,7 +213,7 @@ minimum_epochs = 10000
 patience = 5000 # stop if no improvement since X epochs
 
 
-experiment_info = "train with 6 classes"
+experiment_info = "train with 6 classes, init weight dir: " + init_weight_dir
 
 training_data_file = "data/drawing-data-sets/drawings-191105-6-drawings.npy"
 training_data_file_classes = "data/drawing-data-sets/drawings-191105-6-drawings-classes.npy"
@@ -179,8 +235,9 @@ print(save_dir)
 pathlib.Path(save_dir).mkdir(parents=True, exist_ok=True)
 
 if same_weights_per_run or same_bias_per_run:
-    init_weight_dir = os.path.join(save_dir, "initialWeights")
-    pathlib.Path(init_weight_dir).mkdir(parents=True, exist_ok=True)
+    if not reuse_existing_weights:
+        init_weight_dir = os.path.join(save_dir, "initialWeights")
+        pathlib.Path(init_weight_dir).mkdir(parents=True, exist_ok=True)
 
 for r in range(runs):
 
@@ -391,8 +448,8 @@ for r in range(runs):
     model.set_init_state_learning(c_train)
 
     # store weights of first run, to be reused by next runs
-    if runs > 1 and same_weights_per_run:
-        if r == 0:
+    if runs > 1 and same_weights_per_run or reuse_existing_weights:
+        if r == 0 and not reuse_existing_weights:
             xhW=model.x_to_h.W.data
             hhW=model.h_to_h.W.data
             hyW=model.h_to_y.W.data
@@ -402,7 +459,7 @@ for r in range(runs):
             np.save(os.path.join(init_weight_dir, 'hyW.npy'), hyW)
             np.save(os.path.join(init_weight_dir, 'hvW.npy'), hvW)
         else:
-            print("Load predefined initial weights!")
+            print("Load predefined initial weights from " + init_weight_dir)
             xhW=np.load(os.path.join(init_weight_dir, 'xhW.npy'))
             hhW=np.load(os.path.join(init_weight_dir, 'hhW.npy'))
             hyW=np.load(os.path.join(init_weight_dir, 'hyW.npy'))
@@ -412,8 +469,8 @@ for r in range(runs):
             model.h_to_y.W.data=hyW[:, :model.num_c]
             model.h_to_v.W.data=hvW[:, :model.num_c]
 
-    if runs > 1 and same_bias_per_run:
-        if r == 0:
+    if runs > 1 and same_bias_per_run or reuse_existing_weights:
+        if r == 0 and not reuse_existing_weights:
             xhb=model.x_to_h.b.data
             hhb=model.h_to_h.b.data
             hyb=model.h_to_y.b.data
@@ -423,7 +480,7 @@ for r in range(runs):
             np.save(os.path.join(init_weight_dir, 'hyb.npy'), hyb)
             np.save(os.path.join(init_weight_dir, 'hvb.npy'), hvb)
         else:
-            print("Load predefined initial bias weights!")
+            print("Load predefined initial bias weights from " + init_weight_dir)
             xhb=np.load(os.path.join(init_weight_dir, 'xhb.npy'))
             hhb=np.load(os.path.join(init_weight_dir, 'hhb.npy'))
             hyb=np.load(os.path.join(init_weight_dir, 'hyb.npy'))
