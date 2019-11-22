@@ -56,8 +56,8 @@ var_integration = 2
 # Which initial state to use for generation
 # is_selection_mode = 'zero' # take zero vector
 # is_selection_mode = 'mean' # take the mean of all training initial states
-#is_selection_mode = 'best' # try all available initial states and use the one that best replicates the existing part
-is_selection_mode = 'inference' # use backpropagation inference to infer the best fitting initial states
+is_selection_mode = 'best' # try all available initial states and use the one that best replicates the existing part
+#is_selection_mode = 'inference' # use backpropagation inference to infer the best fitting initial states
 
 inference_epochs=2000
 drawings_per_class = 10
@@ -79,7 +79,9 @@ for current_r in range(len(run_directories)):
     run_dir = os.path.join(training_dir, run_directories[current_r])
 
     # which training parameter conditions to check
-    condition_directories = ['10'] #, '1', '10', '100']
+    condition_directories = ['0.01'] #, '1', '10', '100']
+
+    #print(str(condition_directories) + " " + str(data_set_name))
 
     for current_c in range(len(condition_directories)):
         network_dir = os.path.join(run_dir, condition_directories[current_c])
