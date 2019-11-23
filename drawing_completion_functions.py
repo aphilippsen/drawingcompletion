@@ -4,7 +4,8 @@ from inference import infer_initial_states_sctrnn
 from utils.visualization import plot_multistroke
 
 xp = np
-def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection_mode = 'best', x_start = None, hyp_prior = None, plottingFile = None, add_BI_variance = True, inference_epochs = 2000, inference_network_path = '', inference_network_old = False):
+
+def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection_mode = 'best', x_start = None, hyp_prior = None, plottingFile = None, add_BI_variance = True, inference_epochs = 2000, inference_network_path = '', inference_network_old = False, gpu_id = 0):
     """
         - is_selection_mode: 'best' for using best initial state, 'inference' for inferring the initial state from the input_traj
         - inference_epochs: how much epochs to perform for inference
@@ -65,8 +66,10 @@ def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection
 
     # use input only until ... time steps
     delete_from = reduced_time_steps+1
-    # input_traj_cut = xp.copy(input_traj.reshape((-1,model.num_io)))
-    input_traj_cut = chainer.cuda.to_gpu(xp.copy(chainer.cuda.to_cpu(input_traj.reshape((-1,model.num_io)))))
+    if gpu_id > -1:
+        input_traj_cut = chainer.cuda.to_gpu(xp.copy(chainer.cuda.to_cpu(input_traj.reshape((-1,model.num_io)))))
+    else:
+        input_traj_cut = xp.copy(input_traj.reshape((-1,model.num_io)))
     for t in range(0, input_traj_cut.shape[0], time_steps):
         input_traj_cut[t+delete_from:t+time_steps,:] = 0
     input_traj_cut = input_traj_cut.reshape((input_traj.shape[0],-1))

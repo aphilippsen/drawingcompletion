@@ -15,7 +15,7 @@ from inference import infer_initial_states_sctrnn
 from utils.visualization import plot_multistroke
 from utils.distance_measures import dtw_distance
 
-gpu_id = 0 # -1 for CPU
+gpu_id = -1 # -1 for CPU
 xp = np
 if gpu_id >= 0 and cuda.available:
     print("Use GPU!")
@@ -56,8 +56,8 @@ var_integration = 2
 # Which initial state to use for generation
 # is_selection_mode = 'zero' # take zero vector
 # is_selection_mode = 'mean' # take the mean of all training initial states
-is_selection_mode = 'best' # try all available initial states and use the one that best replicates the existing part
-#is_selection_mode = 'inference' # use backpropagation inference to infer the best fitting initial states
+# is_selection_mode = 'best' # try all available initial states and use the one that best replicates the existing part
+is_selection_mode = 'inference' # use backpropagation inference to infer the best fitting initial states
 
 inference_epochs=2000
 drawings_per_class = 10
@@ -150,7 +150,7 @@ for current_r in range(len(run_directories)):
                 for reduced_time_steps in reduced_time_steps_list:
                     plottingFile = os.path.join(results_dir, 'hyp-' + str(hyp_prior) + '_mode-' + str(is_selection_mode) + '_reduced-' + str(reduced_time_steps) +'_run-' + str(r))
 
-                    init_state, res, results_path, u_h_history = complete_drawing(model, params, input_traj, reduced_time_steps, is_selection_mode = is_selection_mode, hyp_prior = hyp_prior, x_start = x_start, plottingFile = plottingFile, add_BI_variance = add_BI_variance, inference_epochs=inference_epochs)
+                    init_state, res, results_path, u_h_history = complete_drawing(model, params, input_traj, reduced_time_steps, is_selection_mode = is_selection_mode, hyp_prior = hyp_prior, x_start = x_start, plottingFile = plottingFile, add_BI_variance = add_BI_variance, inference_epochs=inference_epochs, gpu_id = gpu_id)
 
                     for curr_class in range(num_classes):
                         final_res[curr_class, reduced_time_steps_list.index(reduced_time_steps)].append(cuda.to_cpu(res[curr_class,:]))
