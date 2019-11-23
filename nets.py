@@ -913,35 +913,12 @@ def save_network(dir_name, params = None, model = None, model_filename = "networ
                     print("Warning: Network type cannot be determined, do not store initial states...")
 
         if not params.learn_weights:
-            weights_array = []
-
-            try:
-                weights_array = np.array([model.x_to_h, model.h_to_h, model.h_to_pb, model.pb_to_h, model.pb_to_pb, model.h_to_y, model.h_to_v])
-                print("store weights of PB_SMTRNN")
-            except:
-                try:
-                    weights_array = np.array([model.x_to_h, model.h_to_h, model.h_to_y, model.h_to_v])
-                    print("store weights of SCTRNN")
-                except:
-                    try:
-                        weights_array = np.array([model.x_to_fh, model.fh_to_fh, model.fh_to_sh, model.sh_to_fh, model.sh_to_sh, model.fh_to_y, model.fh_to_v])
-                        print("store weights of SMTRNN")
-                    except:
-                        print("Warning: Network type cannot be determined, do not store network weights...")
-
-            if len(weights_array) > 0:
-                np.save(dir_name+"/network_weights.npy", np.array([weights_array]))
+            weights_array = cuda.to_cpu(np.array([model.x_to_h, model.h_to_h, model.h_to_y, model.h_to_v]))
+            np.save(dir_name+"/network_weights.npy", np.array([weights_array]))
 
         if not params.learn_bias:
-            bias_array = []
-            try:
-                bias_array = np.array([model.x_to_h_bias, model.h_to_h_bias])
-                print("store bias values of SCTRNN")
-            except:
-                pass
-                #TODO: SMTRNN instead
-            if len(bias_array) > 0:
-                np.save(dir_name+"/network_bias.npy", bias_array)
+            bias_array = cuda.to_cpu(np.array([model.x_to_h_bias, model.h_to_h_bias]))
+            np.save(dir_name+"/network_bias.npy", bias_array)
 
     if not model is None:
         if not model_filename.endswith('.npz'):
