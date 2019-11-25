@@ -934,19 +934,8 @@ def load_network(dir_name, network_type = 'SCTRNN', model_filename = 'network'):
         params = pickle.load(f)
 
     if network_type == 'SCTRNN':
-        try:
-            model = SCTRNN(params.num_io, params.num_c, params.tau_c, params.num_classes, init_state_init = params.init_state_init, external_contrib = params.training_external_contrib, init_state_learning = params.learn_init_states, weights_learning = params.learn_weights, bias_learning = params.learn_bias, aberrant_sensory_precision = params.aberrant_sensory_precision, excitation_bias = params.excitation_bias, rec_conn_factor = params.rec_connection_factor, variance_integration_mode = params.variance_integration_mode, hyp_prior = params.hyp_prior, external_signal_variance = params.external_signal_variance)
-            print("set variance integration mode to " + str(params.variance_integration_mode))
-        except:
-            #backward compatibility
-            print("Not all parameters available, use compatibility mode")
-            model = SCTRNN(params.num_io, params.num_c, params.tau_c, params.num_classes, init_state_init = params.init_state_init, external_contrib = params.training_external_contrib, init_state_learning = params.learn_init_states, weights_learning = params.learn_weights, bias_learning = params.learn_bias, aberrant_sensory_precision = params.aberrant_sensory_precision, excitation_bias = params.excitation_bias, rec_conn_factor = params.rec_connection_factor, variance_integration_mode = params.variance_integration_mode, hyp_prior = params.hyp_prior)
-            # model = SCTRNN(params.num_io, params.num_c, params.tau_c, params.num_classes, init_state_init = params.init_state_init, external_contrib = params.training_external_contrib, init_state_learning = params.learn_init_states, weights_learning = params.learn_weights, bias_learning = params.learn_bias, aberrant_sensory_precision = params.aberrant_sensory_precision, excitation_bias = params.excitation_bias)
-            # model = SCTRNN(params.num_io, params.num_c, params.tau_c, params.num_classes, init_state_init = params.init_state_init, external_contrib = params.training_external_contrib, init_state_learning = params.learn_init_states, aberrant_sensory_precision = params.aberrant_sensory_precision)
-    elif network_type == 'SMTRNN':
-        model = SMTRNN(params.num_io, params.num_fh, params.num_sh, params.tau_io, params.tau_fh, params.tau_sh, params.num_classes, init_state_init_sh = params.init_state_init, init_state_learning = params.learn_init_states, weights_learning = params.learn_weights, external_contrib = params.training_external_contrib, aberrant_sensory_precision = params.aberrant_sensory_precision)
-    elif network_type == 'PB_SMTRNN':
-        model = PB_SMTRNN(params.num_io, params.num_c, params.num_pb, params.tau_c, params.tau_pb, params.num_classes, init_state_init = params.init_state_init, pb_init = params.pb_init, external_contrib = params.training_external_contrib, init_state_learning = params.learn_init_states, weights_learning = params.learn_weights, bias_learning = params.learn_bias, aberrant_sensory_precision = params.aberrant_sensory_precision, excitation_bias = params.excitation_bias, rec_conn_factor = params.rec_connection_factor, variance_integration_mode = params.variance_integration_mode, hyp_prior = params.hyp_prior)
+        model = SCTRNN(params.num_io, params.num_c, params.tau_c, params.num_classes, init_state_init = params.init_state_init, external_contrib = params.training_external_contrib, init_state_learning = params.learn_init_states, weights_learning = params.learn_weights, bias_learning = params.learn_bias, aberrant_sensory_precision = params.aberrant_sensory_precision, excitation_bias = params.excitation_bias, rec_conn_factor = params.rec_connection_factor, variance_integration_mode = params.variance_integration_mode, hyp_prior = params.hyp_prior, external_signal_variance = params.external_signal_variance)
+        print("set variance integration mode to " + str(params.variance_integration_mode))
 
     if not model_filename.endswith('.npz'):
         model_filename = model_filename + '.npz'
@@ -963,22 +952,6 @@ def load_network(dir_name, network_type = 'SCTRNN', model_filename = 'network'):
             model.h_to_h = network_weights[0][1]
             model.h_to_y = network_weights[0][2]
             model.h_to_v = network_weights[0][3]
-        elif network_type == 'SMTRNN':
-            model.x_to_fh = network_weights[0][0]
-            model.fh_to_fh = network_weights[0][1]
-            model.fh_to_sh = network_weights[0][2]
-            model.sh_to_fh = network_weights[0][3]
-            model.sh_to_sh = network_weights[0][4]
-            model.fh_to_y = network_weights[0][5]
-            model.fh_to_v = network_weights[0][6]
-        elif network_type == 'PB_SMTRNN':
-            model.x_to_h = network_weights[0][0]
-            model.h_to_h = network_weights[0][1]
-            model.h_to_pb = network_weights[0][2]
-            model.pb_to_h = network_weights[0][3]
-            model.pb_to_pb = network_weights[0][4]
-            model.h_to_y = network_weights[0][5]
-            model.h_to_v = network_weights[0][6]
 
     try:
         if not params.learn_bias:
