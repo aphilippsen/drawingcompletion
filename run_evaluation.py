@@ -16,10 +16,10 @@ data_set_name = '2019-11-all'
 training_data_file = "data/drawing-data-sets/drawings-191105-6-drawings.npy"
 
 eval_head_dir = './results/completion/' + data_set_name
-#mode = 'inference'
-mode = 'best'
-training_hyp = '1'
-#training_hyp = 'corresponding' # use the same training = test_hyp!
+mode = 'inference'
+# mode = 'best'
+#training_hyp = '1'
+training_hyp = 'corresponding' # use the same training = test_hyp!
 
 # this code is only for one reduced_time_steps at a time!
 reduced = 0 # which array entry to read
@@ -66,7 +66,7 @@ for test_hyp in test_hyp_all:
             train_hyp_dir = test_hyp
         else:
             train_hyp_dir = training_hyp
-            
+
         eval_dir = current_run+'/'+train_hyp_dir+'/'+mode+'/test-'+test_hyp
 
         # load precomputed errors
@@ -131,7 +131,9 @@ output_format = "pdf"
 # pattern_category = ['FACE', 'HOUSE', 'FLOWER']
 
 # for six patterns
-x = [[0.05, 2.05, 4.05, 6.05, 8.05], [0.3, 2.3, 4.3, 6.3, 8.3], [0.55, 2.55, 4.55, 6.55, 8.55], [0.8, 2.8, 4.8, 6.8, 8.8], [1.05, 3.05, 5.05, 7.05, 9.05], [1.3, 3.3, 5.3, 7.3, 9.3]]
+# x = [[0.05, 2.05, 4.05, 6.05, 8.05], [0.3, 2.3, 4.3, 6.3, 8.3], [0.55, 2.55, 4.55, 6.55, 8.55], [0.8, 2.8, 4.8, 6.8, 8.8], [1.05, 3.05, 5.05, 7.05, 9.05], [1.3, 3.3, 5.3, 7.3, 9.3]]
+# for six pattern and 7 conditions
+x = [[0.05, 2.05, 4.05, 6.05, 8.05, 10.05, 12.05], [0.3, 2.3, 4.3, 6.3, 8.3, 10.3, 12.3], [0.55, 2.55, 4.55, 6.55, 8.55, 10.55, 12.55], [0.8, 2.8, 4.8, 6.8, 8.8, 10.8, 12.8], [1.05, 3.05, 5.05, 7.05, 9.05, 11.05, 13.05], [1.3, 3.3, 5.3, 7.3, 9.3, 11.3, 13.3]]
 colors = ['red', 'orange', 'green', 'blue', 'gray', 'black']
 pattern_category = ['FACE', 'HOUSE', 'CAR', 'FLOWER', 'HUMAN', 'ROCKET']
 
@@ -139,7 +141,6 @@ pattern_category = ['FACE', 'HOUSE', 'CAR', 'FLOWER', 'HUMAN', 'ROCKET']
 my_xticks = []
 for num_t in range(num_test_hyp):
     my_xticks.append('H=' + str(test_hyp_all[num_t]))
-
 
 orientation_y_line = np.tile(0.005, (2,)) # np.max(vis_corr[1])
 
@@ -151,7 +152,7 @@ ax.set_xlabel('prior parameter condition')
 ax.set_ylabel('Drawing error (DTW distance)')
 
 for line_offset in np.arange(-0.005, 0.061, 0.005):
-    plt.plot([-1, 11], orientation_y_line+line_offset, 'lightgray', zorder=0, linewidth=5)
+    plt.plot([-1, 16], orientation_y_line+line_offset, 'lightgray', zorder=0, linewidth=5)
 
 for pat in range(num_patterns):
     for bla in range(len(x[pat])):
@@ -165,9 +166,9 @@ for pat in range(num_patterns):
         ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=2), medianprops=dict(color=colors[pat], linewidth=2), flierprops=dict(color=colors[pat], linewidth=2), whiskerprops=dict(color=colors[pat], linewidth=2), capprops=dict(color=colors[pat], linewidth=2), showfliers=False)
 
         if bla == 0:
-            ax.scatter(np.repeat(x[pat][bla], len(best_new[bla][0][:,pat])), best_new[bla][0][:,pat], linewidth=2, color=colors[pat], label=pattern_category[pat])
+            ax.scatter(np.repeat(x[pat][bla], len(best_new[bla][0][:,pat])), best_new[bla][0][:,pat], linewidth=2, color=colors[pat], label=pattern_category[pat], s=200,marker='o')
         else:
-            ax.scatter(np.repeat(x[pat][bla], len(best_new[bla][0][:,pat])), best_new[bla][0][:,pat], linewidth=2, color=colors[pat])
+            ax.scatter(np.repeat(x[pat][bla], len(best_new[bla][0][:,pat])), best_new[bla][0][:,pat], linewidth=2, color=colors[pat], s=200,marker='o')
 
 
 #        ax.scatter(x[pat][bla], median_best_new, color=colors[pat], marker='s', s=1000)
@@ -177,7 +178,7 @@ for pat in range(num_patterns):
     # ax.errorbar(x[pat], best_new_means[:,pat], yerr=best_new_std[:,pat], color=colors[pat], ecolor=colors[pat], fmt='o', markersize=20, capsize=15, capthick=5, elinewidth=5, barsabove=True, label=pattern_category[pat])
 
 plt.xticks(x[2], my_xticks)
-ax.set_xlim([-0.2, 11.0])
+ax.set_xlim([-0.2, 15.8])
 ax.set_ylim([-0.002, 0.05])
 fig.legend(loc=(0.855, 0.47))
 fig.tight_layout()
@@ -191,7 +192,8 @@ ax.set_xlabel('prior parameter condition')
 ax.set_ylabel('Drawing error (DTW distance)')
 
 for line_offset in np.arange(-0.005, 0.061, 0.005):
-    plt.plot([-1, 11], orientation_y_line+line_offset, 'lightgray', zorder=0, linewidth=5)
+    plt.plot([-1, 16], orientation_y_line+line_offset, 'lightgray', zorder=0, linewidth=5)
+
 for pat in range(num_patterns):
     for bla in range(len(x[pat])):
 
@@ -205,12 +207,12 @@ for pat in range(num_patterns):
 
 
         if bla == 0:
-            ax.scatter(np.repeat(x[pat][bla], len(corr_new[bla][0][:,pat])), corr_new[bla][0][:,pat], color=colors[pat], label=pattern_category[pat])
+            ax.scatter(np.repeat(x[pat][bla], len(corr_new[bla][0][:,pat])), corr_new[bla][0][:,pat], color=colors[pat], label=pattern_category[pat], s=200,marker='o')
         else:
-            ax.scatter(np.repeat(x[pat][bla], len(corr_new[bla][0][:,pat])), corr_new[bla][0][:,pat], color=colors[pat])
+            ax.scatter(np.repeat(x[pat][bla], len(corr_new[bla][0][:,pat])), corr_new[bla][0][:,pat], color=colors[pat], s=200, marker='o')
     # ax.errorbar(x[pat], corr_new_means[:,pat], yerr=corr_new_std[:,pat], color=colors[pat], ecolor=colors[pat], fmt='o', markersize=20, capsize=10, capthick=5, elinewidth=5, barsabove=True, label=pattern_category[pat])
 plt.xticks(x[2], my_xticks)
-ax.set_xlim([-0.2, 11.0])
+ax.set_xlim([-0.2, 15.8])
 ax.set_ylim([-0.002, 0.05])
 fig.legend(loc=(0.855, 0.47))
 fig.tight_layout()
@@ -224,7 +226,7 @@ ax.set_xlabel('prior parameter condition')
 ax.set_ylabel('Drawing error (DTW distance)')
 
 for line_offset in np.arange(-0.005, 0.061, 0.005):
-    plt.plot([-1, 11], orientation_y_line+line_offset, 'lightgray', zorder=0, linewidth=5)
+    plt.plot([-1, 16], orientation_y_line+line_offset, 'lightgray', zorder=0, linewidth=5)
 
 for pat in range(num_patterns):
     for bla in range(len(x[pat])):
@@ -238,12 +240,12 @@ for pat in range(num_patterns):
         ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=2), medianprops=dict(color=colors[pat], linewidth=2), flierprops=dict(color=colors[pat], linewidth=2), whiskerprops=dict(color=colors[pat], linewidth=2), capprops=dict(color=colors[pat], linewidth=2), showfliers=False)
 
         if bla == 0:
-            ax.scatter(np.repeat(x[pat][bla], len(best_vis[bla][0][:,pat])), best_vis[bla][0][:,pat], color=colors[pat], label=pattern_category[pat])
+            ax.scatter(np.repeat(x[pat][bla], len(best_vis[bla][0][:,pat])), best_vis[bla][0][:,pat], color=colors[pat], label=pattern_category[pat], s=200,marker='o')
         else:
-            ax.scatter(np.repeat(x[pat][bla], len(best_vis[bla][0][:,pat])), best_vis[bla][0][:,pat], color=colors[pat])
+            ax.scatter(np.repeat(x[pat][bla], len(best_vis[bla][0][:,pat])), best_vis[bla][0][:,pat], color=colors[pat], s=200,marker='o')
     # ax.errorbar(x[pat], best_vis_means[:,pat], yerr=best_vis_std[:,pat], color=colors[pat], ecolor=colors[pat], fmt='o', markersize=20, capsize=15, capthick=5, elinewidth=5, barsabove=True, label=pattern_category[pat])
 plt.xticks(x[2], my_xticks)
-ax.set_xlim([-0.2, 11.0])
+ax.set_xlim([-0.2, 15.8])
 ax.set_ylim([-0.002, 0.05])
 fig.legend(loc=(0.855, 0.47))
 fig.tight_layout()
@@ -257,7 +259,7 @@ ax.set_xlabel('prior parameter condition')
 ax.set_ylabel('Drawing error (DTW distance)')
 
 for line_offset in np.arange(-0.005, 0.061, 0.005):
-    plt.plot([-1, 11], orientation_y_line+line_offset, 'lightgray', zorder=0, linewidth=5)
+    plt.plot([-1, 16], orientation_y_line+line_offset, 'lightgray', zorder=0, linewidth=5)
 
 for pat in range(num_patterns):
     for bla in range(len(x[pat])):
@@ -276,7 +278,7 @@ for pat in range(num_patterns):
             ax.scatter(np.repeat(x[pat][bla], len(corr_vis[bla][0][:,pat])), corr_vis[bla][0][:,pat], color=colors[pat])
     # ax.errorbar(x[pat], corr_vis_means[:,pat], yerr=corr_vis_std[:,pat], color=colors[pat], ecolor=colors[pat], fmt='o', markersize=20, capsize=10, capthick=5, elinewidth=5, barsabove=True, label=pattern_category[pat])
 plt.xticks(x[2], my_xticks)
-ax.set_xlim([-0.2, 11.0])
+ax.set_xlim([-0.2, 15.8])
 ax.set_ylim([-0.002, 0.05])
 fig.legend(loc=(0.855, 0.47))
 fig.tight_layout()
