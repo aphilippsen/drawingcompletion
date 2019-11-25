@@ -163,12 +163,12 @@ for pat in range(num_patterns):
         lower_std_dev = np.mean(best_new[bla][0][:,pat]) - np.sqrt(np.var(best_new[bla][0][:,pat]))
         upper_std_dev = np.mean(best_new[bla][0][:,pat]) + np.sqrt(np.var(best_new[bla][0][:,pat]))
 
-        ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=2), medianprops=dict(color=colors[pat], linewidth=2), flierprops=dict(color=colors[pat], linewidth=2), whiskerprops=dict(color=colors[pat], linewidth=2), capprops=dict(color=colors[pat], linewidth=2), showfliers=False)
+        ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=5), medianprops=dict(color=colors[pat], linewidth=5), flierprops=dict(color=colors[pat], linewidth=5), whiskerprops=dict(color=colors[pat], linewidth=5), capprops=dict(color=colors[pat], linewidth=5), showfliers=False)
 
         if bla == 0:
-            ax.scatter(np.repeat(x[pat][bla], len(best_new[bla][0][:,pat])), best_new[bla][0][:,pat], linewidth=2, color=colors[pat], label=pattern_category[pat], s=200,marker='o')
+            ax.scatter(np.repeat(x[pat][bla], len(best_new[bla][0][:,pat])), best_new[bla][0][:,pat], linewidth=5, color=colors[pat], label=pattern_category[pat], s=100,marker='o')
         else:
-            ax.scatter(np.repeat(x[pat][bla], len(best_new[bla][0][:,pat])), best_new[bla][0][:,pat], linewidth=2, color=colors[pat], s=200,marker='o')
+            ax.scatter(np.repeat(x[pat][bla], len(best_new[bla][0][:,pat])), best_new[bla][0][:,pat], linewidth=5, color=colors[pat], s=100,marker='o')
 
 
 #        ax.scatter(x[pat][bla], median_best_new, color=colors[pat], marker='s', s=1000)
@@ -179,7 +179,7 @@ for pat in range(num_patterns):
 
 plt.xticks(x[2], my_xticks)
 ax.set_xlim([-0.2, 15.8])
-ax.set_ylim([-0.002, 0.05])
+ax.set_ylim([-0.002, 0.06])
 fig.legend(loc=(0.855, 0.47))
 fig.tight_layout()
 plt.savefig(os.path.join(plot_dir, 'completion_new-part_best.' + output_format))
@@ -203,17 +203,17 @@ for pat in range(num_patterns):
         lower_std_dev = np.mean(corr_new[bla][0][:,pat]) - np.sqrt(np.var(corr_new[bla][0][:,pat]))
         upper_std_dev = np.mean(corr_new[bla][0][:,pat]) + np.sqrt(np.var(corr_new[bla][0][:,pat]))
 
-        ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=2), medianprops=dict(color=colors[pat], linewidth=2), flierprops=dict(color=colors[pat], linewidth=2), whiskerprops=dict(color=colors[pat], linewidth=2), capprops=dict(color=colors[pat], linewidth=2), showfliers=False)
+        ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=5), medianprops=dict(color=colors[pat], linewidth=5), flierprops=dict(color=colors[pat], linewidth=5), whiskerprops=dict(color=colors[pat], linewidth=5), capprops=dict(color=colors[pat], linewidth=5), showfliers=False)
 
 
         if bla == 0:
-            ax.scatter(np.repeat(x[pat][bla], len(corr_new[bla][0][:,pat])), corr_new[bla][0][:,pat], color=colors[pat], label=pattern_category[pat], s=200,marker='o')
+            ax.scatter(np.repeat(x[pat][bla], len(corr_new[bla][0][:,pat])), corr_new[bla][0][:,pat], color=colors[pat], label=pattern_category[pat], s=100,marker='o')
         else:
-            ax.scatter(np.repeat(x[pat][bla], len(corr_new[bla][0][:,pat])), corr_new[bla][0][:,pat], color=colors[pat], s=200, marker='o')
+            ax.scatter(np.repeat(x[pat][bla], len(corr_new[bla][0][:,pat])), corr_new[bla][0][:,pat], color=colors[pat], s=100, marker='o')
     # ax.errorbar(x[pat], corr_new_means[:,pat], yerr=corr_new_std[:,pat], color=colors[pat], ecolor=colors[pat], fmt='o', markersize=20, capsize=10, capthick=5, elinewidth=5, barsabove=True, label=pattern_category[pat])
 plt.xticks(x[2], my_xticks)
 ax.set_xlim([-0.2, 15.8])
-ax.set_ylim([-0.002, 0.05])
+ax.set_ylim([-0.002, 0.15])
 fig.legend(loc=(0.855, 0.47))
 fig.tight_layout()
 plt.savefig(os.path.join(plot_dir,'completion_new-part_correct.' + output_format))
@@ -237,16 +237,16 @@ for pat in range(num_patterns):
         lower_std_dev = np.mean(best_vis[bla][0][:,pat]) - np.sqrt(np.var(best_vis[bla][0][:,pat]))
         upper_std_dev = np.mean(best_vis[bla][0][:,pat]) + np.sqrt(np.var(best_vis[bla][0][:,pat]))
 
-        ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=2), medianprops=dict(color=colors[pat], linewidth=2), flierprops=dict(color=colors[pat], linewidth=2), whiskerprops=dict(color=colors[pat], linewidth=2), capprops=dict(color=colors[pat], linewidth=2), showfliers=False)
+        ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=5), medianprops=dict(color=colors[pat], linewidth=5), flierprops=dict(color=colors[pat], linewidth=5), whiskerprops=dict(color=colors[pat], linewidth=5), capprops=dict(color=colors[pat], linewidth=5), showfliers=False)
 
         if bla == 0:
-            ax.scatter(np.repeat(x[pat][bla], len(best_vis[bla][0][:,pat])), best_vis[bla][0][:,pat], color=colors[pat], label=pattern_category[pat], s=200,marker='o')
+            ax.scatter(np.repeat(x[pat][bla], len(best_vis[bla][0][:,pat])), best_vis[bla][0][:,pat], color=colors[pat], label=pattern_category[pat], s=100,marker='o')
         else:
-            ax.scatter(np.repeat(x[pat][bla], len(best_vis[bla][0][:,pat])), best_vis[bla][0][:,pat], color=colors[pat], s=200,marker='o')
+            ax.scatter(np.repeat(x[pat][bla], len(best_vis[bla][0][:,pat])), best_vis[bla][0][:,pat], color=colors[pat], s=100,marker='o')
     # ax.errorbar(x[pat], best_vis_means[:,pat], yerr=best_vis_std[:,pat], color=colors[pat], ecolor=colors[pat], fmt='o', markersize=20, capsize=15, capthick=5, elinewidth=5, barsabove=True, label=pattern_category[pat])
 plt.xticks(x[2], my_xticks)
 ax.set_xlim([-0.2, 15.8])
-ax.set_ylim([-0.002, 0.05])
+ax.set_ylim([-0.002, 0.06])
 fig.legend(loc=(0.855, 0.47))
 fig.tight_layout()
 plt.savefig(os.path.join(plot_dir,'completion_visible-part_best.' + output_format))
@@ -270,16 +270,16 @@ for pat in range(num_patterns):
         lower_std_dev = np.mean(corr_vis[bla][0][:,pat]) - np.sqrt(np.var(corr_vis[bla][0][:,pat]))
         upper_std_dev = np.mean(corr_vis[bla][0][:,pat]) + np.sqrt(np.var(corr_vis[bla][0][:,pat]))
 
-        ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=2), medianprops=dict(color=colors[pat], linewidth=2), flierprops=dict(color=colors[pat], linewidth=2), whiskerprops=dict(color=colors[pat], linewidth=2), capprops=dict(color=colors[pat], linewidth=2), showfliers=False)
+        ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=5), medianprops=dict(color=colors[pat], linewidth=5), flierprops=dict(color=colors[pat], linewidth=5), whiskerprops=dict(color=colors[pat], linewidth=5), capprops=dict(color=colors[pat], linewidth=5), showfliers=False)
 
         if bla == 0:
-            ax.scatter(np.repeat(x[pat][bla], len(corr_vis[bla][0][:,pat])), corr_vis[bla][0][:,pat], color=colors[pat], label=pattern_category[pat])
+            ax.scatter(np.repeat(x[pat][bla], len(corr_vis[bla][0][:,pat])), corr_vis[bla][0][:,pat], color=colors[pat], label=pattern_category[pat], s=100, marker='o')
         else:
-            ax.scatter(np.repeat(x[pat][bla], len(corr_vis[bla][0][:,pat])), corr_vis[bla][0][:,pat], color=colors[pat])
+            ax.scatter(np.repeat(x[pat][bla], len(corr_vis[bla][0][:,pat])), corr_vis[bla][0][:,pat], color=colors[pat], s=100, marker='o')
     # ax.errorbar(x[pat], corr_vis_means[:,pat], yerr=corr_vis_std[:,pat], color=colors[pat], ecolor=colors[pat], fmt='o', markersize=20, capsize=10, capthick=5, elinewidth=5, barsabove=True, label=pattern_category[pat])
 plt.xticks(x[2], my_xticks)
 ax.set_xlim([-0.2, 15.8])
-ax.set_ylim([-0.002, 0.05])
+ax.set_ylim([-0.002, 0.06])
 fig.legend(loc=(0.855, 0.47))
 fig.tight_layout()
 plt.savefig(os.path.join(plot_dir, 'completion_visible-part_correct.' + output_format))
