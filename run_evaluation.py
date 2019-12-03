@@ -115,6 +115,39 @@ for num_t in range(num_test_hyp):
     corr_new_std[num_t,:] = np.std(corr_new[num_t,0],axis=0)
 
 
+# confusions
+
+"""
+# doesn't properly work
+
+confu_mean = np.zeros(num_test_hyp)
+confu_std = np.zeros(num_test_hyp)
+threshold = 0.005
+for i in range(num_test_hyp):
+    confu_mean[i] = np.mean((corr_new[i,0][best_new[i,0]<threshold] - best_new[i,0][best_new[i,0]<threshold]))
+    confu_std[i] = np.std((corr_new[i,0][best_new[i,0]<threshold] - best_new[i,0][best_new[i,0]<threshold]))
+
+colors = ['blue', 'purple', 'turquoise', 'green', 'red', 'orange', 'pink']
+
+plt.figure()
+
+for i in range(num_test_hyp):
+    plt.plot(np.arange(7), confu_mean)
+
+plt.errorbar(np.arange(7), confu_mean, yerr=confu_std)
+"""
+
+confusions = np.zeros(num_test_hyp)
+for i in range(7):
+    # confusions[i] = (np.count_nonzero((best_new[i,0]-corr_new[i,0])==0))
+    # confusions[i] = np.count_nonzero(((best_new[i,0]-corr_new[i,0])==0) & (best_new[i,0]<0.01))
+
+    # count how many were NOT correctly classified (the "best" error measure equals the "corresponding")
+    confusions[i] = np.count_nonzero(((best_new[i,0]-corr_new[i,0])!=0))
+
+# percentage
+confusions = confusions/600*100
+
 
 ######################################
 # Final statistics plot              #
