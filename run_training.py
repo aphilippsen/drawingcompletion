@@ -202,16 +202,9 @@ save_interval = 100            # interval for testing the production capability 
 save_model_interval = 100      # interval for storing the learned model
 epochs = 30000                  # total maximum number of epochs
 
-likelihood_stop = False        # whether to automatically stop learning depending on the likelihood
-minimum_epochs = 20000
-
-
-
 # stop when there is no new "best" epoch result for proactive generation within the last X epochs
 check_best_improvement_stop = True
-minimum_epochs = 10000
 patience = 5000 # stop if no improvement since X epochs
-
 
 experiment_info = "train with 6 classes, init weight dir: " + init_weight_dir
 
@@ -891,60 +884,6 @@ for r in range(runs):
                     from distutils.file_util import copy_file
                     copy_file(os.path.join(final_save_dir, "network-epoch-"+str(best_epoch).zfill(len(str(epochs))) + ".npz"), os.path.join(final_save_dir, "network-epoch-best.npz"))
                     break
-
-       # all_mean_diffs = []
-       # all_std_diffs = []
-       # m1s = []
-       # s1s = []
-       # tmp_epoch_marker = 0
-       # conv_eval_interval = 500
-       # mean_threshold = 1e-3
-       # std_threshold = 5e-2
-       # for i in range(conv_eval_interval+1,epoch):
-       #     m1 = np.mean(likelihood_per_epoch[i-conv_eval_interval-1:i])
-       #     s1 = np.std(likelihood_per_epoch[i-conv_eval_interval-1:i])
-       #     m1s.append(m1)
-       #     s1s.append(s1)
-       #     if i > conv_eval_interval*2:
-       #         # relative decrease from previous to this timestep (<0 = no improvement)
-       #         mean_diff = (m1s[len(m1s)-conv_eval_interval] - m1s[len(m1s)-1]) / np.max([np.abs(m1s[len(m1s)-conv_eval_interval]), np.abs(m1s[len(m1s)-1])])
-       #         # absolute variance decrease in comparison to first time step (=> converges against 1 which means that variance is zero)
-       #         # std_diff = (s1s[0]-s1) / np.abs(s1s[0])
-       #         std_diff = (s1s[len(s1s)-conv_eval_interval] - s1s[len(s1s)-1]) / np.max([np.abs(s1s[len(s1s)-conv_eval_interval]), np.abs(s1s[len(s1s)-1])])
-       #         all_mean_diffs.append(mean_diff)
-       #         all_std_diffs.append(std_diff)
-       #         print(str(i) + ": mean_diff: " + str(mean_diff) + ", std_diff: " + str(std_diff))
-       #         if (-mean_threshold < mean_diff < mean_threshold) and (-std_threshold < std_diff < std_threshold):
-       #             if tmp_epoch_marker == 0:
-       #                 tmp_epoch_marker = i
-       #             # put a first tmp_epoch_marker if it is converged, train for 20% more
-       #             elif i > tmp_epoch_marker * 1.2:
-       #                 break
-
-
-        if likelihood_stop and epoch > conv_eval_interval:
-           m1 = np.mean(likelihood_per_epoch[epoch-conv_eval_interval-1:epoch])
-           s1 = np.std(likelihood_per_epoch[epoch-conv_eval_interval-1:epoch])
-           m1s.append(m1)
-           s1s.append(s1)
-           if epoch > conv_eval_interval*2:
-               # relative decrease from previous to this timestep (<0 = no improvement)
-               mean_diff = (m1s[len(m1s)-conv_eval_interval] - m1s[len(m1s)-1]) / np.max([np.abs(m1s[len(m1s)-2]), np.abs(m1s[len(m1s)-1])])
-               # absolute variance decrease in comparison to first time step (=> converges against 1 which means that variance is zero)
-               # std_diff = (s1s[0]-s1) / np.abs(s1s[0])
-               # std_diff = (s1s[len(s1s)-conv_eval_interval] - s1s[len(s1s)-1]) /
-               std_diff = (s1s[len(s1s)-conv_eval_interval] - s1s[len(s1s)-1]) / np.max([np.abs(s1s[len(s1s)-conv_eval_interval]), np.abs(s1s[len(s1s)-1])])
-
-               all_mean_diffs.append(mean_diff)
-               all_std_diffs.append(std_diff)
-               print(str(epoch) + ": mean_diff: " + str(mean_diff) + ", std_diff: " + str(std_diff))
-               if (-mean_threshold < mean_diff < mean_threshold) and (-std_threshold < std_diff < std_threshold) and (epoch > minimum_epochs): # and (std_diff > 0.95):
-                   if tmp_epoch_marker == 0:
-                       break
-                       tmp_epoch_marker = epoch
-                   elif epoch > tmp_epoch_marker * 1.2:
-                       break
-
 
     save_network(final_save_dir, p, model, model_filename = "network-final")
 
