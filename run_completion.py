@@ -15,7 +15,7 @@ from inference import infer_initial_states_sctrnn
 from utils.visualization import plot_multistroke
 from utils.distance_measures import dtw_distance
 
-gpu_id = -1 # -1 for CPU
+gpu_id = 0 # -1 for CPU
 xp = np
 if gpu_id >= 0 and cuda.available:
     print("Use GPU!")
@@ -79,7 +79,7 @@ for current_r in range(len(run_directories)):
     run_dir = os.path.join(training_dir, run_directories[current_r])
 
     # which training parameter conditions to check
-    condition_directories = ['0.01'] #, '1', '10', '100']
+    condition_directories = ['0.1'] #, '1', '10', '100']
 
     #print(str(condition_directories) + " " + str(data_set_name))
 
@@ -93,7 +93,7 @@ for current_r in range(len(run_directories)):
         params, model = load_network(network_dir, model_filename='network-epoch-best.npz')
 
         # which hyp_prior condition to use for testing:
-        test_hyp_priors = [0.001, 1000]
+        test_hyp_priors = [0.001]
 
         # do the inference and generation for all testing hyp_prior values, and for all training trajectories
         for hyp_prior in test_hyp_priors:

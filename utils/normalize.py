@@ -55,9 +55,9 @@ def normalize(data_orig, axis = 0, threshold = 0, minmax = [], feature_dim = 0):
         offset = np.tile(offset, num_timesteps)
         data_range = np.tile(data_range, num_timesteps)
 
-    return y, offset, data_range
+    return y, offset, data_range, minmax
 
-def range2norm(data, offset, data_range, axis = 0, minmax = []):
+def range2norm(data, offset, data_range, minmax, axis = 0):
     if np.ndim(data) == 1:
         data = np.reshape(data, (1, len(data)))
     if axis == 0:
