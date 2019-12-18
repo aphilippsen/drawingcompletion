@@ -31,7 +31,7 @@ else:
 
 #data_set_name = '2019-11-05'
 #data_set_name = '2019-11-all'
-data_set_name = "2019-11-all"
+data_set_name = "2019-11-all-new/part2"
 
 # trajectory data
 # training_data_file = "/home/anja/repos/cognitivemirroring/ChainerRNN/data/drawings/multi-stroke/drawings-190215-faces-houses-flowers.npy"
@@ -79,7 +79,7 @@ for current_r in range(len(run_directories)):
     run_dir = os.path.join(training_dir, run_directories[current_r])
 
     # which training parameter conditions to check
-    condition_directories = ['0.1'] #, '1', '10', '100']
+    condition_directories = ['0.001'] #, '1', '10', '100']
 
     #print(str(condition_directories) + " " + str(data_set_name))
 
@@ -114,6 +114,7 @@ for current_r in range(len(run_directories)):
             final_vis_best_class = np.empty((num_classes, len(reduced_time_steps_list)), dtype=object)
             final_new_best_class = np.empty((num_classes, len(reduced_time_steps_list)), dtype=object)
             final_uh_history = np.empty((num_classes, len(reduced_time_steps_list)), dtype=object)
+            final_inferred_is = np.empty((num_classes, len(reduced_time_steps_list)), dtype=object)
 
             for i in range(final_res.shape[0]):
                 for j in range(final_res.shape[1]):
@@ -128,6 +129,7 @@ for current_r in range(len(run_directories)):
                     final_vis_best_class[i,j] = []
                     final_new_best_class[i,j] = []
                     final_uh_history[i,j] = []
+                    final_inferred_is[i,j] = []
 
             # for all input trajectory patterns
 
@@ -155,6 +157,7 @@ for current_r in range(len(run_directories)):
                     for curr_class in range(num_classes):
                         final_res[curr_class, reduced_time_steps_list.index(reduced_time_steps)].append(cuda.to_cpu(res[curr_class,:]))
                         final_uh_history[curr_class, reduced_time_steps_list.index(reduced_time_steps)].append(cuda.to_cpu(u_h_history[curr_class,:]))
+                        final_inferred_is[curr_class, reduced_time_steps_list.index(reduced_time_steps)].append(cuda.to_cpu(init_state))
 
                         # for later evaluation, store parameters
                         if is_selection_mode == 'inference':
@@ -228,6 +231,8 @@ for current_r in range(len(run_directories)):
                             np.save(os.path.join(results_dir, 'final-vis_best_class-' + str(hyp_prior) + '_mode-' + str(is_selection_mode) + '.npy'), final_vis_best_class)
                             np.save(os.path.join(results_dir, 'final-new_best_class-' + str(hyp_prior) + '_mode-' + str(is_selection_mode) + '.npy'), final_new_best_class)
                             np.save(os.path.join(results_dir, 'final-uh-history-' + str(hyp_prior) + '_mode-' + str(is_selection_mode) + '.npy'), final_uh_history)
+                            np.save(os.path.join(results_dir, 'final-inferred-is-' + str(hyp_prior) + '_mode-' + str(is_selection_mode) + '.npy'), final_inferred_is)
+
 
                 np.save(os.path.join(results_dir, 'final-res_hyp-' + str(hyp_prior) + '_mode-' + str(is_selection_mode) + '.npy'), final_res)
                 np.save(os.path.join(results_dir, 'final-resultspath_hyp-' + str(hyp_prior) + '_mode-' + str(is_selection_mode) + '.npy'), final_results_path)
@@ -240,4 +245,4 @@ for current_r in range(len(run_directories)):
                 np.save(os.path.join(results_dir, 'final-vis_best_class-' + str(hyp_prior) + '_mode-' + str(is_selection_mode) + '.npy'), final_vis_best_class)
                 np.save(os.path.join(results_dir, 'final-new_best_class-' + str(hyp_prior) + '_mode-' + str(is_selection_mode) + '.npy'), final_new_best_class)
                 np.save(os.path.join(results_dir, 'final-uh-history-' + str(hyp_prior) + '_mode-' + str(is_selection_mode) + '.npy'), final_uh_history)
-
+                np.save(os.path.join(results_dir, 'final-inferred-is-' + str(hyp_prior) + '_mode-' + str(is_selection_mode) + '.npy'), final_inferred_is)
