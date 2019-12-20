@@ -30,7 +30,7 @@ from utils.normalize import normalize, range2norm, norm2range
 from utils.visualization import plot_results, plot_pca_activations
 
 
-def infer_initial_states_sctrnn(params, old_model, testing_data, num_timesteps = 0, epochs = 2000, start_is = 'mean', error_computation = 'standard', single_recognition = False, plot = True, hyp_prior = None, external_signal_variance = -1, x_start = None):
+def infer_initial_states_sctrnn(params, old_model, testing_data, num_timesteps = 0, epochs = 2000, start_is = 'mean', error_computation = 'standard', single_recognition = False, plot = True, hyp_prior = None, external_signal_variance = -1, x_start = None, use_init_state_loss = True):
 
     likelihood_stop = False
     conv_eval_interval = 500
@@ -284,7 +284,7 @@ def infer_initial_states_sctrnn(params, old_model, testing_data, num_timesteps =
             outv[t] = xp.mean(v.array)
 
         # for each training sequence of this batch: compute loss for maintaining desired initial state variance
-        if not single_recognition:
+        if not single_recognition and use_init_state_loss:
             for s in range(len(c_train)):
                 if gpu_id >= 0:
                     # acc_init_loss += chainer.functions.gaussian_nll(model.initial_states()[model.classes][s], mean_init_states, xp.float32(xp.ones(mean_init_states.shape) * exponential.log(cuda.to_gpu(params.init_state_var, device=gpu_id)).array))

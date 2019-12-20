@@ -37,7 +37,7 @@ def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection
 
     elif is_selection_mode == 'best':
         # init_state = np.reshape(model.initial_states.W.array[0,:], (1, model.num_c))
-        res, resv, resm, pe, wpe, respost = model.generate('best', time_steps, external_contrib = external_contrib_testing, external_input = input_traj, epsilon_disturbance = 0, hyp_prior = 1, external_signal_variance = external_signal_var_testing, x_start = x_start)
+        res, resv, resm, pe, wpe, respost = model.generate('best', time_steps, external_contrib = external_contrib_testing, external_input = input_traj, epsilon_disturbance = 0, hyp_prior = 1, external_signal_variance = external_signal_var_testing, x_start = x_start, use_init_state_loss=False)
 
         init_state = model.initial_states.W.array[model.used_is_idx,:] #xp.reshape(model.initial_states.W.array[model.used_is_idx,:], (len(model.used_is_idx), model.num_c))
 

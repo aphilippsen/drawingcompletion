@@ -6,7 +6,7 @@ import pathlib
 
 # data_set_name = '2019-11-05'
 # data_set_name = '2019-11-08'
-data_set_name = '2019-11-all'
+data_set_name = '2019-11-all-new'
 
 # Evaluation of the inference results
 # when train and test hyp-prior vary!

@@ -31,7 +31,7 @@ else:
 
 #data_set_name = '2019-11-05'
 #data_set_name = '2019-11-all'
-data_set_name = "2019-11-all-new/part2"
+data_set_name = "2019-11-all-no-is-loss"
 
 # trajectory data
 # training_data_file = "/home/anja/repos/cognitivemirroring/ChainerRNN/data/drawings/multi-stroke/drawings-190215-faces-houses-flowers.npy"
@@ -79,7 +79,7 @@ for current_r in range(len(run_directories)):
     run_dir = os.path.join(training_dir, run_directories[current_r])
 
     # which training parameter conditions to check
-    condition_directories = ['0.001'] #, '1', '10', '100']
+    condition_directories = ['1000'] #, '1', '10', '100']
 
     #print(str(condition_directories) + " " + str(data_set_name))
 
@@ -93,7 +93,7 @@ for current_r in range(len(run_directories)):
         params, model = load_network(network_dir, model_filename='network-epoch-best.npz')
 
         # which hyp_prior condition to use for testing:
-        test_hyp_priors = [0.001]
+        test_hyp_priors = [1000]
 
         # do the inference and generation for all testing hyp_prior values, and for all training trajectories
         for hyp_prior in test_hyp_priors:
