@@ -15,11 +15,12 @@ from nets import load_network
 # Plotting the internal representations of the trained networks
 
 training_data_file = "data/drawing-data-sets/drawings-191105-6-drawings.npy"
-data_set_name = '2019-11-all'
+data_set_name = '2019-11-all-new'
 # data_set_name = '2019-11-08'
 mode = 'inference'
+inf_epochs = np.concatenate((np.arange(1,2001,100), [2000]))
 
-for training_hyp in ['1000']: #['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
+for training_hyp in ['0.001']: #['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
 
     num_timesteps = 90
     num_neurons = 250
@@ -61,6 +62,12 @@ for training_hyp in ['1000']: #['0.001', '0.01', '0.1', '1', '10', '100', '1000'
     mean_dist_reactive_per_timestep = np.zeros((num_runs*num_inferences*num_patterns, num_timesteps))
     var_dist_reactive_per_timestep = np.zeros((num_runs*num_inferences*num_patterns, num_timesteps))
 
+    mean_inner_dist_is_epochs_per_timestep = np.zeros((num_runs, len(inf_epochs)))
+    var_inner_dist_is_epochs_per_timestep = np.zeros((num_runs, len(inf_epochs)))
+    mean_outer_dist_is_epochs_per_timestep = np.zeros((num_runs, len(inf_epochs)))
+    var_outer_dist_is_epochs_per_timestep = np.zeros((num_runs, len(inf_epochs)))
+    mean_dist_training_is_epochs = np.zeros((num_runs, len(inf_epochs)))
+
     # Analysis is performed separately for each of the trained networks (=runs) with the above defined H_train
     dir_list = next(os.walk(eval_head_dir))[1]
     dist_to_corresponding_training_is_all = np.empty((len(dir_list),),dtype=object)
@@ -84,6 +91,7 @@ for training_hyp in ['1000']: #['0.001', '0.01', '0.1', '1', '10', '100', '1000'
         # get the results from the inferences
         uh_history = np.empty((len(test_hyp_all), 1), dtype=object)
         inferred_is = np.empty((len(test_hyp_all), 1), dtype=object)
+        is_history = np.empty((len(test_hyp_all), 1), dtype=object)
 
         test_hyp_idx = -1
         for test_hyp in test_hyp_all:
@@ -95,30 +103,43 @@ for training_hyp in ['1000']: #['0.001', '0.01', '0.1', '1', '10', '100', '1000'
             uh_history[test_hyp_idx,0] = np.empty((num_inferences, num_patterns), dtype=object)
             inferred_is[test_hyp_idx,0] = np.empty((num_inferences, 1), dtype=object)
             
+            is_history[test_hyp_idx,0] = np.empty((num_inferences, num_patterns), dtype=object)
             # load the current history
             uh = np.load(eval_dir + "/final-uh-history-"+test_hyp+"_mode-"+mode+".npy")
-    #TODO        final_is = np.load(eval_dir + "/final-inferred-is-"+test_hyp+"_mode-"+mode+".npy")
+
+# TODO: for 2019-11-all-new (init state stored separately!)
+            final_is = np.load(eval_dir + "/final-inferred-is-"+test_hyp+"_mode-"+mode+".npy")
             # that's how the loaded uh should look like:
             #   uh[cl,red][inf].reshape((num_timesteps, num_neurons))
             # transfer info and do the reshape:
             for i in range(uh.shape[0]): # for all pattern classes
                 for j in range(len(uh[i,0])): # for all inferences for this pattern
                     uh_history[test_hyp_idx,0][j,i] = uh[i,0][j].reshape((num_timesteps, num_neurons))
-    #TODO                inferred_is[test_hyp_idx,0][j,0] = final_is[i,0][j]
+#TODO: for 2019-11-all-new (init state stored separately!)
+                    inferred_is[test_hyp_idx,0][j,0] = final_is[i,0][j]
 
             # get the trained initial states and the inferred initial states from all the ten inferences
             inf_nets_path = os.path.join(eval_dir, "inference_networks")
             inf_nets_list = next(os.walk(inf_nets_path))[1]
             for curr_inf in range(len(inf_nets_list)):
                 # load each and extract and store the initial states
-                params, model = load_network(os.path.join(inf_nets_path, inf_nets_list[curr_inf]), model_filename='network-final')
-                inferred_is[test_hyp_idx,0][curr_inf,0] = model.initial_states.W.array
+#TODO                #params, model = load_network(os.path.join(inf_nets_path, inf_nets_list[curr_inf]), model_filename='network-final')
+#TODO                #inferred_is[test_hyp_idx,0][curr_inf,0] = model.initial_states.W.array
 
 
+                for pat in range(num_patterns):
+                    is_history[test_hyp_idx,0][curr_inf,pat] = np.zeros((len(inf_epochs),num_neurons))
+                ep_counter=0
+                for ep in inf_epochs:
+                    params, model = load_network(os.path.join(inf_nets_path, inf_nets_list[curr_inf]), model_filename='network-epoch-'+str(ep).zfill(4))
+                    for pat in range(num_patterns):
+                        is_history[test_hyp_idx,0][curr_inf,pat][ep_counter,:] = model.initial_states.W.array[pat,:]
+                    ep_counter += 1
 
-            for i in range(uh.shape[0]): # for all pattern classes
-                for j in range(len(uh[i,0])): # for all inferences for this pattern
-                     inferred_is[test_hyp_idx,0][j,0][i,:] = uh_history[test_hyp_idx,0][j,i][0,:]
+            # Testing: set inferred_is to first time step of uh_history
+            #for i in range(uh.shape[0]): # for all pattern classes
+            #    for j in range(len(uh[i,0])): # for all inferences for this pattern
+            #         inferred_is[test_hyp_idx,0][j,0][i,:] = uh_history[test_hyp_idx,0][j,i][0,:]
 
 
         # reshape everything to (-1, 250) for preparing for PCA
@@ -185,6 +206,16 @@ for training_hyp in ['1000']: #['0.001', '0.01', '0.1', '1', '10', '100', '1000'
             if normalize_for_statistics:
                 pca_uh_history_reactive[k] = range2norm(pca_uh_history_reactive[k], norm_offset, norm_range, minmax)
 
+        # and IS history
+        pca_is_history = np.empty((len(test_hyp_all), 1), dtype=object)
+        for i in range(len(test_hyp_all)): # per test_hyp
+            pca_is_history[i,0] = np.empty((num_inferences, num_patterns), dtype=object)
+            for j in range(num_inferences): # per inference
+                for k in range(num_patterns):
+                    pca_is_history[i,0][j,k] = pca.transform(scaler.transform(is_history[i,0][j,k]))
+                    if normalize_for_statistics:
+                        pca_is_history[i,0][j,k] = range2norm(pca_is_history[i,0][j,k], norm_offset, norm_range, minmax)
+
         # store all the results as text files
         with open(os.path.join(result_dir, eval_setting + "_training-is_" + dir_list[curr_r] + "_H-" + str(training_hyp) + ".txt"), "w") as f:
             f.write('class')
@@ -226,7 +257,7 @@ for training_hyp in ['1000']: #['0.001', '0.01', '0.1', '1', '10', '100', '1000'
                                 f.write('\t' + str(pca_uh_history[h,0][inf,pa][t,i]))
                             f.write('\n')
                     np.save(os.path.join(result_dir, eval_setting + "_uh-history_" + dir_list[curr_r] + '-' + str(inf) + "_pattern-" + str(pa) + '_H-' + test_hyp_all[h] + ".npy"), pca_uh_history[h,0][inf,pa])
-
+                    np.save(os.path.join(result_dir, eval_setting + "_is-history_" + dir_list[curr_r] + '-' + str(inf) + "_pattern-" + str(pa) + '_H-' + test_hyp_all[h] + ".npy"), pca_is_history[h,0][inf,pa])
 
 
         """
@@ -440,7 +471,7 @@ for training_hyp in ['1000']: #['0.001', '0.01', '0.1', '1', '10', '100', '1000'
             for i in range(len(plotting_test_hyps)): #range(len(test_hyp_all)):
                 for j in range(num_inferences):
                     all_is_per_cluster[pat,0][i*num_inferences+j,:] = pca_inferred_is[i,0][j,0][pat,:]
-                    dist_to_corresponding_training_is.append(scipy.spatial.distance.euclidean(pca_inferred_is[i,0][j,0][pat,:], trained_is[pat,:]))
+                    dist_to_corresponding_training_is.append(scipy.spatial.distance.euclidean(pca_inferred_is[i,0][j,0][pat,:], pca_trained_is[pat,:]))
             
             inner_distances_is_clusters.append(np.mean(pdist(all_is_per_cluster[pat,0])))
             
@@ -456,7 +487,7 @@ for training_hyp in ['1000']: #['0.001', '0.01', '0.1', '1', '10', '100', '1000'
 
         dist_to_corresponding_training_is_all[curr_r] = dist_to_corresponding_training_is
 
-        dist_between_training_is_all[curr_r] = np.mean(pdist(trained_is))
+        dist_between_training_is_all[curr_r] = np.mean(pdist(pca_trained_is))
 
         # per time step, how close are the trajectories together?
     #    all_uh_per_timestep_per_cluster = np.empty((num_timesteps, num_patterns),dtype=object)
@@ -502,12 +533,70 @@ for training_hyp in ['1000']: #['0.001', '0.01', '0.1', '1', '10', '100', '1000'
                 # now compare all entries in current_matrix to current_other_matrix
                 for c1 in range(current_matrix.shape[0]):
                     for c2 in range(current_other_matrix.shape[0]):
-                        outer_distances.append(scipy.spatial.distance.euclidean(current_matrix[c1,0:until], current_other_matrix[c2,0:until]))
+                        outer_distances.append(scipy.spatial.distance.euclidean(current_matrix[c1,:], current_other_matrix[c2,:]))
 
             # take the mean of measured distances for this timestep for each timestep
             mean_outer_dist_per_timestep[curr_r,t] = np.mean(outer_distances)
             # take the mean over variance of patterns to get the variance
             var_outer_dist_per_timestep[curr_r,t] = np.var(outer_distances)
+
+        # per epoch during inference, how close are the inferred IS?
+        for t in range(len(inf_epochs)):
+
+            inner_distances_is_epochs = []
+            inner_dist_is_epochs_var = []
+            dist_training_is_epochs = []
+            for pat in range(num_patterns):        
+                current_matrix = np.zeros((len(plotting_test_hyps) * num_inferences, num_neurons))
+
+                for i in range(len(plotting_test_hyps)): #range(len(test_hyp_all)):
+                    for j in range(num_inferences):
+                        current_matrix[i*num_inferences+j,:] = pca_is_history[i,0][j,pat][t,:]
+                        dist_training_is_epochs.append(scipy.spatial.distance.euclidean(pca_is_history[i,0][j,pat][t,:], pca_trained_is[pat,:]))
+
+                inner_distances_is_epochs.append(np.mean(pdist(current_matrix)))
+                inner_dist_is_epochs_var.append(np.var(pdist(current_matrix)))
+                
+            # take the mean of measured distances for this timestep for each timestep
+            mean_inner_dist_is_epochs_per_timestep[curr_r,t] = np.mean(inner_distances_is_epochs)
+            # take the mean over variance of patterns to get the variance
+            var_inner_dist_is_epochs_per_timestep[curr_r,t] = np.mean(inner_dist_is_epochs_var)
+
+            mean_dist_training_is_epochs[curr_r,t] = np.mean(dist_training_is_epochs)
+
+
+
+        for t in range(len(inf_epochs)):
+
+            outer_distances_is_epochs = []
+            for pat in range(num_patterns):        
+                current_matrix = np.zeros((len(plotting_test_hyps) * num_inferences, num_neurons))
+                current_other_matrix = np.zeros((len(plotting_test_hyps) * num_inferences * (num_patterns-1), num_neurons))
+
+                for i in range(len(plotting_test_hyps)):
+                    for j in range(num_inferences):
+                        current_matrix[i*num_inferences+j,:] = pca_is_history[i,0][j,pat][t,:]
+
+                        offset=0
+                        for pat2 in range(num_patterns):
+                            if pat != pat2:
+                                current_other_matrix[i*num_inferences+j+offset,:] = pca_is_history[i,0][j,pat2][t,:]
+                                offset += num_inferences*len(plotting_test_hyps)
+
+                # now compare all entries in current_matrix to current_other_matrix
+                for c1 in range(current_matrix.shape[0]):
+                    for c2 in range(current_other_matrix.shape[0]):
+                        outer_distances_is_epochs.append(scipy.spatial.distance.euclidean(current_matrix[c1,:], current_other_matrix[c2,:]))
+
+            # take the mean of measured distances for this timestep for each timestep
+            mean_outer_dist_is_epochs_per_timestep[curr_r,t] = np.mean(outer_distances_is_epochs)
+            # take the mean over variance of patterns to get the variance
+            var_outer_dist_is_epochs_per_timestep[curr_r,t] = np.var(outer_distances_is_epochs)
+
+
+
+
+
 
 
         # per time step, how close are the trajectories to the "reactive" trajectory?
@@ -537,9 +626,14 @@ for training_hyp in ['1000']: #['0.001', '0.01', '0.1', '1', '10', '100', '1000'
     np.save(os.path.join(result_dir, eval_setting + '_inner_dist_mean.npy'), mean_inner_dist_per_timestep)
     np.save(os.path.join(result_dir, eval_setting + '_inner_dist_var.npy'), var_inner_dist_per_timestep)
     np.save(os.path.join(result_dir, eval_setting + '_inner_dist_is_clusters.npy'), inner_distances_is_clusters)
+    np.save(os.path.join(result_dir, eval_setting + '_inner_dist_is_epochs_mean.npy'), mean_inner_dist_is_epochs_per_timestep)
+    np.save(os.path.join(result_dir, eval_setting + '_inner_dist_is_epochs_var.npy'), var_inner_dist_is_epochs_per_timestep)
+    np.save(os.path.join(result_dir, eval_setting + '_dist_training_is_epochs.npy'), mean_dist_training_is_epochs)
 
     np.save(os.path.join(result_dir, eval_setting + '_outer_dist_mean.npy'), mean_outer_dist_per_timestep)
     np.save(os.path.join(result_dir, eval_setting + '_outer_dist_var.npy'), var_outer_dist_per_timestep)
+    np.save(os.path.join(result_dir, eval_setting + '_outer_dist_is_epochs_mean.npy'), mean_outer_dist_is_epochs_per_timestep)
+    np.save(os.path.join(result_dir, eval_setting + '_outer_dist_is_epochs_var.npy'), var_outer_dist_is_epochs_per_timestep)
     np.save(os.path.join(result_dir, eval_setting + '_outer_dist_is_clusters.npy'), outer_distances_is_clusters)
 
     np.save(os.path.join(result_dir, eval_setting + "_dist_to_corresponding_training_is.npy"), dist_to_corresponding_training_is_all)
@@ -579,6 +673,53 @@ for training_hyp in ['1000']: #['0.001', '0.01', '0.1', '1', '10', '100', '1000'
         for i in range(len(dist_to_corresponding_training_is_all)):
             for j in range(len(dist_to_corresponding_training_is_all[i])):
                 f.write(str(training_hyp) + "\t" + str(dist_to_corresponding_training_is_all[i][j]) + "\n")
+
+    with open(os.path.join(result_dir, eval_setting + "_dist_between_training_is_H-" + str(training_hyp) + ".txt"), 'w') as f:
+        f.write("h\tdist\n")
+        for i in range(len(dist_between_training_is_all)):
+            f.write(str(training_hyp) + "\t" + str(dist_between_training_is_all[i]) + "\n")
+
+
+
+    # and same thing for the IS epochs
+    # mean distance score of within-class-differences
+    with open(os.path.join(result_dir, eval_setting + "_neuron-act-inner-distances-is-epochs-per-time_H-" + str(training_hyp) + ".txt"), 'w') as f:
+        f.write("t\t")
+        for net in range(num_runs):
+            f.write("net" + str(net) + "\t")
+        f.write("mean\tstd\n")
+        for t in range(len(inf_epochs)):
+            f.write(str(t) + "\t")
+            for net in range(num_runs):
+                f.write(str(mean_inner_dist_is_epochs_per_timestep[net,t]) + "\t")
+            f.write(str(np.mean(mean_inner_dist_is_epochs_per_timestep[:,t])) + "\t" + str(np.sqrt(np.var(mean_inner_dist_is_epochs_per_timestep[:,t]))) + "\n")
+
+
+    # mean distance score of between-class-differences
+    with open(os.path.join(result_dir, eval_setting + "_neuron-act-outer-distances-is-epochs-per-time_H-" + str(training_hyp) + ".txt"), 'w') as f:
+        f.write("t\t")
+        for net in range(num_runs):
+            f.write("net" + str(net) + "\t")
+        f.write("mean\tstd\n")
+        for t in range(len(inf_epochs)):
+            f.write(str(t) + "\t")
+            for net in range(num_runs):
+                f.write(str(mean_outer_dist_is_epochs_per_timestep[net,t]) + "\t")
+            f.write(str(np.mean(mean_outer_dist_is_epochs_per_timestep[:,t])) + "\t" + str(np.sqrt(np.var(mean_outer_dist_is_epochs_per_timestep[:,t]))) + "\n")
+
+    with open(os.path.join(result_dir, eval_setting + "_dist-to-training-is-epochs_H-" + str(training_hyp) + ".txt"), 'w') as f:
+        f.write("t\t")
+        for net in range(num_runs):
+            f.write("net" + str(net) + "\t")
+        f.write("mean\tstd\n")
+        for t in range(len(inf_epochs)):
+            f.write(str(t) + "\t")
+            for net in range(num_runs):
+                f.write(str(mean_dist_training_is_epochs[net,t]) + "\t")
+            f.write(str(np.mean(mean_dist_training_is_epochs[:,t])) + "\t" + str(np.sqrt(np.var(mean_dist_training_is_epochs[:,t]))) + "\n")
+
+
+
 
     # PCA, and plot them
 
