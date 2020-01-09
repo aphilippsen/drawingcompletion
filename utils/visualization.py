@@ -2,9 +2,6 @@ from chainer.backends import cuda
 import matplotlib
 import matplotlib.pyplot as plt
 
-# # deprecated:
-# from matplotlib.mlab import PCA
-
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
@@ -44,12 +41,9 @@ def plot_results(res, num_timesteps, save_filename, inputDim, twoDim = False, al
 def plot_pca_activations(u_h_history, num_timesteps, save_filename, num_original_dims, num_classes):
     allContextActivations = np.reshape(cuda.to_cpu(u_h_history), (-1,num_original_dims))
 
-    # pcaContextActivations = PCA(allContextActivations)
-    # Y, offset, dataRange = normalize(pcaContextActivations.Y)
-
     pca = PCA(n_components=2)
     pcaContextActivations = pca.fit_transform(StandardScaler().fit_transform(allContextActivations))
-    Y, offset, dataRange = normalize(pcaContextActivations)
+    Y, offset, dataRange, minmax = normalize(pcaContextActivations)
 
     pcaComp1 = 0
     pcaComp2 = 1
@@ -69,7 +63,7 @@ def plot_pca_activations(u_h_history, num_timesteps, save_filename, num_original
     if len(u_h_history) > split:
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        for i in range(split,len(u_h_history)):#len(u_h_history)):
+        for i in range(split,len(u_h_history)):
             ax.plot(Y[i*(num_timesteps+1),pcaComp1], Y[i*(num_timesteps+1),pcaComp2], color=colors[i%split], label=str(i), marker='o', markersize=5)
             ax.plot(Y[i*(num_timesteps+1):(i+1)*(num_timesteps+1),pcaComp1], Y[i*(num_timesteps+1):(i+1)*(num_timesteps+1),pcaComp2], color=colors[i%split], label=str(i))
         plt.legend()
@@ -101,16 +95,3 @@ def plot_multistroke(res, num_timesteps, save_filename, input_dim, given_part = 
     plt.savefig(save_filename)
     plt.close()
 
-
-# from nets import load_network
-# import visualization
-# import os
-# epochs=5000
-# num_timesteps=75
-#
-# save_dir = "/media/AnjaDataDrive/results/bias-parameter/sctrnn-lissajous/high/2018-8-21_16-16_0025591"
-# for epoch in range(1, epochs, 100):
-#     p,model=load_network(save_dir, model_filename="network-epoch-" + str(epoch).zfill(4))
-#     res, resv, u_h_history = model.generate(model.initial_states.W.array, num_timesteps, external_contrib = 0, epsilon_disturbance = 0, additional_output='activations')
-#     results = cuda.to_cpu(res)
-#     visualization.plot_pca_activations(u_h_history, num_timesteps, os.path.join(save_dir, "context_act_proactive_epoch-" + str(epoch).zfill(len(str(epochs)))), p.num_c, p.num_classes)

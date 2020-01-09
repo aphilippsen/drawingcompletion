@@ -15,12 +15,12 @@ from nets import load_network
 # Plotting the internal representations of the trained networks
 
 training_data_file = "data/drawing-data-sets/drawings-191105-6-drawings.npy"
-data_set_name = '2019-11-all-new'
+data_set_name = '2019-11-all-no-is-loss'
 # data_set_name = '2019-11-08'
 mode = 'inference'
 inf_epochs = np.concatenate((np.arange(1,2001,100), [2000]))
 
-for training_hyp in ['0.001']: #['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
+for training_hyp in ['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
 
     num_timesteps = 90
     num_neurons = 250

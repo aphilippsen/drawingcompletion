@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 from chainer import cuda
 import scipy.interpolate
-from drawing_data_generation_interface import DrawingGenerationInterface, process_drawing, process_stroke
+from drawing_interface import DrawingGenerationInterface, process_drawing, process_stroke
 
 def get_new_points(X,Y,Z,steps):
     array = []
@@ -104,23 +104,24 @@ def plot_training_images_for_video(index,training_data,plot_dir):
         plt.close()
 
 if __name__ == '__main__':
-    #plot_dir= os.path.join(os.getcwd(),'local/results/evaluation/plotting')
+
     plot_dir= os.path.join(os.getcwd(),'config_shape')
     training_data_directory = os.path.join(os.getcwd(),'data/drawings/multi-stroke')
-    #training_data = np.load(os.path.join(training_data_directory, 'drawings-190215-faces-houses-flowers-starting-local-features.npy'),allow_pickle=True)
+
+    fig, ax = plt.subplots(nrows=1, ncols=1)
+
+    """
+    # Use in case you want to display existing drawings as a template
+
     orig_training_data = np.load(os.path.join(training_data_directory, 'drawings-190215-faces-houses-flowers.npy'),allow_pickle=True)
-#    training_data = np.load(os.path.join(training_data_directory, 'drawings-190215-faces-houses-flowers-diff-initial-points.npy'),allow_pickle=True)
     index= 0
     num_timesteps=90
     display_timesteps=30
     input_dim = 3
     given_part = 0
 
-    WHICH_STIMULUS = -1 # 1: house
-
-    #get_new_face_training_data(orig_training_data[index].reshape(-1,3),index,training_data)
-    #plot_training_images_for_video(int(index/3),training_data,plot_dir)
-    fig, ax = plt.subplots(nrows=1, ncols=1)
+    WHICH_STIMULUS = -1
+    
     for t in range(1, num_timesteps):
         for stim in range(WHICH_STIMULUS,len(orig_training_data),3):
             traj = orig_training_data[stim].reshape((num_timesteps, input_dim))
@@ -136,5 +137,7 @@ if __name__ == '__main__':
                     ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], '#11ff11', linewidth = 0.5)
                 else:
                     ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'lightgray', linewidth = 0.5)
+    """
+
     interface = DrawingGenerationInterface(ax, process_stroke, process_drawing)
     plt.show(block=False)

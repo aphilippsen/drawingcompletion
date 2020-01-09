@@ -58,161 +58,52 @@ else:
    print("Use CPU!")
    gpu_id = -1
 
-# define if position derivatives schould be learned, too
-use_derivatives = False
-
-# define parameter values for different trials
-# external_contrib_runs = [1]
-# runs = len(external_contrib_runs)
-
-# aberrant_sensory_precision_runs = [-8, -4, -2, 0, 2, 4, 8]
-# runs = len(aberrant_sensory_precision_runs)
-
-#tau_runs = [1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4]
-# runs = len(tau_runs)
-
-#num_c_runs = [1000,900,800,700,600,500,400,300,200,100,70,50,30,10,5] # [200, 100, 70, 50, 30, 10, 5] #[10,30,50,70,100,200]
-#runs = len(num_c_runs)
-
-# ini_var_runs = [0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000]
-# runs = len(ini_var_runs)
-
-#lrate_runs = [1e-7, 1e-6, 1e-5, 5e-5, 1e-4, 1e-3, 0.01, 0.05]
-#runs = len(lrate_runs)
-
-# conn_runs = [70, 60, 50, 40, 30, 20, 10, 5, 1]
-# runs = len(conn_runs)
-
-#var_int_runs = [0, 1, 2]
-#runs = len(var_int_runs)
-
-# # ext_noise_runs = [0.0001, 0.001, 0.003, 0.005, 0.007, 0.01]
-# # runs = len(ext_noise_runs)
-# ext_noise_runs = []
-#
-# # hyp_prior_runs = [0.01, 1, 100]
-# hyp_prior_runs = [0.5, 1, 3]
-# runs = len(hyp_prior_runs)
-
 # Implicit trajectory noise
-# implicit_trajectory_noise_runs = [0.001, 0.001, 0.001]
-#implicit_trajectory_noise_runs = [0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005]
-#implicit_trajectory_noise_runs = [0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001]
-#implicit_trajectory_noise_runs = [0, 0, 0, 0, 0, 0, 0, 0, 0]
-#implicit_trajectory_noise_runs = [0, 0, 0, 1e-5, 1e-5, 1e-5, 0.0001, 0.0001, 0.0001, 0.001, 0.001, 0.001]
-implicit_trajectory_noise_runs = [0]#, 0]#, 0, 0, 0]#,0,0,0,0,0]
-# runs = len(implicit_trajectory_noise_runs)
+implicit_trajectory_noise_runs = [0]
 
 # Explicit sensor noise that has influence on BI
-# explicit_sensor_variance_runs = [0.0001, 0.0001, 0.0001]
-#explicit_sensor_variance_runs = [1e-4, 1e-4, 1e-4, 0.001, 0.001, 0.001, 0.01, 0.01, 0.01]
-#explicit_sensor_variance_runs = [0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001]
-explicit_sensor_variance_runs = [0.001]#, 0.001]#, 0.001, 0.001, 0.001]#, 0.001, 0.001, 0.001, 0.001, 0.001]
-# runs = len(explicit_sensor_variance_runs)
+explicit_sensor_variance_runs = [0.001]
 
 # whether to add the explicit_sensor_variance to the training signal
 add_external_signal_variance = True
 
-add_smooth_traj_noise = False
+# Hypo prior that influences BI: this determines the different H settings
+hyp_prior_runs = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
 
-# Hypo prior that influences BI
-#hyp_prior_runs =  [0.3, 0.5, 0.9, 1, 2, 5]
-hyp_prior_runs = [0.001, 0.01, 0.1, 1, 10, 100, 1000] #[0.01, 1, 50]
-# hyp_prior_runs= [0.001]
-
-# If True, define init_weight_dir here, otherwise generate new initial weights
-reuse_existing_weights = True
-
-# 1000
-
-# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-05_14-34_0970831/initialWeights"
-# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_15-55_0480074
-#init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-05_14-35_0321645/initialWeights"
-# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-02_0579644
-# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-05_14-35_0421490/initialWeights"
-# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-02_0911090
-#init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-05_14-35_0786428/initialWeights"
-# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-03_0361625
-# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-05_14-36_0715535/initialWeights"
-# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-03_0552937
-# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-08_15-35_0902631/initialWeights"
-# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-04_0152981
-# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-08_15-36_0061932/initialWeights"
-# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-04_0418418
-# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-08_15-36_0110189/initialWeights"
-# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-05_0887558
-# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-08_15-36_0712878/initialWeights"
-# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-05_0096949
-# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-08_15-36_0818585/initialWeights"
-# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-06_0786867
-
-
-
-# 0.001
-
-# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-05_14-34_0970831/initialWeights"
-# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-09_0845833
-#init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-05_14-35_0321645/initialWeights"
-# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-10_0991327
-# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-05_14-35_0421490/initialWeights"
-# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-11_0506551
-# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-05_14-35_0786428/initialWeights"
-# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-11_0852766
-# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-05_14-36_0715535/initialWeights"
-# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-11_0307238
-# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-08_15-35_0902631/initialWeights"
-# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-13_0425077
-# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-08_15-36_0061932/initialWeights"
-# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-13_0558169
-# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-08_15-36_0110189/initialWeights"
-# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-14_0034660
-# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-08_15-36_0712878/initialWeights"
-# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-14_0537299
-# init_weight_dir = "/home/anja/github/drawingcompletion/results/training/2019-11-all/2019-11-08_15-36_0818585/initialWeights"
-# ==> /home/anja/github/drawingcompletion/results/training/2019-11-18_16-15_0238757
-
-
-
-
-
-# hyp_prior_runs = [1000.01, 1000.1, 1001, 1010, 1100]
+# typically false, set to true if you want to use initial weights which are already stored somewhere, then define the location init_weight_dir here
+reuse_existing_weights = False
+# init_weight_dir = ""
 
 runs = len(hyp_prior_runs)
 
-assert(len(implicit_trajectory_noise_runs) == runs)
-assert(len(explicit_sensor_variance_runs) == runs)
-
-# which variance to set for the input in the Bayesian inference
+# which variance to set for the input in the Bayesian inference in case of imprecise perception (~ no input)
 ext_var_proactive = 1
 
+# all hyp_prior_runs conditions use the same initial weights
 same_weights_per_run = True
 same_bias_per_run = True
+
+# weight AND bias are adapted during learning
 learn_bias = True
 
-#excitation_bias_runs = [0.00000001, 0.0000001, 0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1, 1] # [0.00000001, 0.0000001, 0.000001, 0.00001, 0.1, 1, 2, 5, 10] #[0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1]
-#runs = len(excitation_bias_runs)
-#same_weights_per_run = True
-#same_bias_per_run = False
-#learn_bias = False
-
-prediction_error_type = 'standard' # 'standard' or 'integrated'
+prediction_error_type = 'standard' # 'standard' or 'integrated' depending on how prediction error is computed
 # prediction_error_type = 'integrated'
 
-save_interval = 100            # interval for testing the production capability of the network and saving initial state information
-save_model_interval = 100      # interval for storing the learned model
-epochs = 30000                  # total maximum number of epochs
+save_interval = 100        # interval for testing the production capability of the network and saving initial state information
+save_model_interval = 100  # interval for storing the learned model
+epochs = 30000             # total maximum number of epochs
 
 # stop when there is no new "best" epoch result for proactive generation within the last X epochs
 check_best_improvement_stop = True
 patience = 5000 # stop if no improvement since X epochs
 
-experiment_info = "train with 6 classes, init weight dir: " + init_weight_dir
+experiment_info = "" # additional text for the info text file
 
-training_data_file = "data/drawing-data-sets/drawings-191105-6-drawings.npy"
-training_data_file_classes = "data/drawing-data-sets/drawings-191105-6-drawings-classes.npy"
+# which training data files to use
+training_data_file = "data_generation/drawing-data-sets/drawings-191105-6-drawings.npy"
+training_data_file_classes = "data_generation/drawing-data-sets/drawings-191105-6-drawings-classes.npy"
 
 x_train_orig = np.float32(np.load(training_data_file))
-
 # drawings in data file are in order 0 1 2 0 1 2 0 1 2...
 
 num_classes = 6
@@ -220,7 +111,6 @@ num_samples_per_class = 10
 
 
 save_location = "./results/training/"
-
 now = datetime.datetime.now()
 expStr = str(now.year).zfill(4) + "-" + str(now.month).zfill(2) + "-" + str(now.day).zfill(2) + "_" + str(now.hour).zfill(2) + "-" + str(now.minute).zfill(2) + "_" + str(now.microsecond).zfill(7)
 save_dir = os.path.join(save_location, expStr)
@@ -237,17 +127,10 @@ for r in range(runs):
     best_epoch_error = 1000 # some high initial error value
     best_epoch = 0
 
-    # num_timesteps = 70
-    # traj_noise_parts = 7
     num_timesteps = 90
-    traj_noise_parts = 10
     num_io = 3
-    # corresponds to a period of num_timesteps/num_repetitions
 
-    #noise_variances=[0.003, 0.003, 0.003, 0.003]
-
-
-    #Implicit input variance between trajectories
+    # Implicit input variance between trajectories
     implicit_trajectory_noise = 0.001
     if len(implicit_trajectory_noise_runs) > 0:
         implicit_trajectory_noise = implicit_trajectory_noise_runs[r]
@@ -257,72 +140,25 @@ for r in range(runs):
     if len(explicit_sensor_variance_runs) > 0:
         explicit_sensor_variance = explicit_sensor_variance_runs[r]
 
-    # Hypo prior:  variance added for BI
+    # Hypo prior: variance added for BI
     if len(hyp_prior_runs) > 0:
         hyp_prior = hyp_prior_runs[r]
-
 
     final_save_dir = os.path.join(save_dir, str(hyp_prior))
     pathlib.Path(final_save_dir).mkdir(parents=True, exist_ok=True)
 
-
-    # x_train = create_lissajous_curves_murata_four_positions(num_classes, num_repetitions, num_timesteps, noise_variances, num_samples_per_class = num_samples_per_class, format = 'array')
+    # Generate data for training by adding noise
     x_train_orig = np.float32(np.load(training_data_file))
     x_train = np.copy(x_train_orig)
     if implicit_trajectory_noise > 0:
         print("Adding implicit trajectory noise")
         trajectory_noise_variances = np.tile([implicit_trajectory_noise], (num_classes*num_samples_per_class,x_train.shape[1]))
         x_train += np.sqrt(trajectory_noise_variances) * np.random.randn(x_train.shape[0], x_train.shape[1])
-    if add_smooth_traj_noise:
-        print("Adding smooth trajectory noise")
-        for i in range(x_train.shape[0]):
-            x_train[i,:] += np.reshape(get_trajectory_noise(num_timesteps, int(num_timesteps/traj_noise_parts), dim=num_io), (num_io*num_timesteps,))
 
-    # adding sensor variance
+    # adding sensor variance and set the sensor variance accordingly to mimic "accurate perception"
     external_signal_variance_vec = xp.ones((x_train.shape)) * explicit_sensor_variance
-
     explicit_sensor_variance = np.max([np.mean(np.var(x_train[x:num_classes*num_samples_per_class:num_classes,:],axis=0)) for x in range(num_classes)])
     print("Update explicit sensor variance to actual sensor variance " + str(explicit_sensor_variance))
-
-    if use_derivatives == True:
-       # add also velocity and acceleration
-       for i in range(0, x_train.shape[0]):
-
-           reshaped_line = np.copy(np.reshape(x_train[i, 0:x_train.shape[1]],
-                                              (num_timesteps, int(x_train.shape[1] / num_timesteps))))
-           reshaped_line_x = reshaped_line[:, 0]
-           reshaped_line_y = reshaped_line[:, 1]
-
-           # for velocity and acceleration
-           velocity_x = np.copy(np.reshape(np.gradient(reshaped_line_x), (num_timesteps,)))
-           velocity_y = np.copy(np.reshape(np.gradient(reshaped_line_y), (num_timesteps,)))
-
-           acceleration_x = np.reshape(np.gradient(velocity_x), (num_timesteps, 1))
-           acceleration_y = np.reshape(np.gradient(velocity_y), (num_timesteps, 1))
-
-           velocity_x = np.reshape(velocity_x, (num_timesteps, 1))
-           velocity_y = np.reshape(velocity_y, (num_timesteps, 1))
-
-           velocity = np.concatenate((velocity_x, velocity_y), axis=1)
-
-           acceleration = np.concatenate((acceleration_x, acceleration_y), axis=1)
-
-           # normalize input
-           reshaped_line = reshaped_line / np.amax(reshaped_line)
-           velocity = velocity / np.amax(velocity)
-           acceleration = acceleration / np.amax(acceleration)
-
-           reshaped_line = np.concatenate((reshaped_line, velocity, acceleration), axis=1)
-
-           if i == 0:
-               x_train_extended = np.reshape(reshaped_line,
-                                             (1, 3 * int(x_train.shape[1] / num_timesteps) * num_timesteps))
-           else:
-               x_train_extended = np.concatenate((x_train_extended, np.reshape(reshaped_line, (
-                   1, 3 * int(x_train.shape[1] / num_timesteps) * num_timesteps))), axis=0)
-
-       x_train = x_train_extended
-
 
     if add_external_signal_variance:
         print("Add noise for sensor variance")
@@ -332,76 +168,36 @@ for r in range(runs):
         else:
             x_train += xp.sqrt(external_signal_variance_vec) * xp.random.randn(x_train.shape[0], x_train.shape[1])
 
-    # c_train = xp.arange(num_classes)
-    # if num_samples_per_class > 1:
-    #     c_train = xp.tile(xp.array(c_train), num_samples_per_class)
     c_train = np.load(training_data_file_classes)
 
     # x_train is of dimensionality (num_classes * num_samples_per_class) x (num_timesteps * num_io)
-    # each row of x_train: [t1dim1, t1dim2, t2dim1, t2dim2...]
-    # each column of x_train: [batch1class1, batch1class2, batch2class1, batch2class2...]
+    # each row of x_train: [t1dim1, t1dim2, t1dim3, t2dim1, t2dim2, t2dim3, ...]
+    # each column of x_train: [drawing1class1, drawing1class2, ..., drawing2class1, drawing2class2, ...]
 
+    # how many samples to present in each batch: all
     batch_size = num_samples_per_class * num_classes
 
-    # infer number of classes from
-    # num_classes = max(c_train)+1
-    inputDim = int(x_train.shape[1]/num_timesteps)
-    plot_results(x_train[0:num_classes], num_timesteps, os.path.join(final_save_dir, 'target_trajectories.png'), inputDim,twoDim=True)
+    plot_results(x_train[0:num_classes], num_timesteps, os.path.join(final_save_dir, 'target_trajectories.png'), num_io,twoDim=True)
 
     ####################################################################################
     # batch_size, num_classes, x_train_orig, c_train and noise_variances should be set #
     ####################################################################################
 
     #################################################
-    # x_train_orig => data normalization => x_train # => Not necessary here, because it is already in a valid range
+    # x_train_orig => data normalization => x_train # => Not necessary here, because the drawings are already between [-1, 1]
     #################################################
 
     # Initialize parameter setting
 
-    # training_ext_contrib = external_contrib_runs[r]
     training_ext_contrib = 1
-
-    # training_tau = tau_runs[r]
     training_tau = 2
-
-    # training_context_n = num_c_runs[r]
     training_context_n = 250
-
-    #training_ini_var = ini_var_runs[r]
     training_ini_var = 10
-
-    #aberrant_sensory_precision = aberrant_sensory_precision_runs[r]
     aberrant_sensory_precision = 0
-
-    # excitation_bias = excitation_bias_runs[r]
     excitation_bias = 1/training_context_n # default 0.05
-
-    # lrate = lrate_runs[r]
     lrate = 0.0005
-
-    #conn = conn_runs[r]
     conn = training_context_n
-
-    #var_integration = var_int_runs[r]
     var_integration = 2
-
-
-    # # fixed initial states: one-of-k coding
-    # oneMatrix = np.concatenate((1*np.ones((1,20)), -1*np.ones((1,20))))
-    # initMatrix = np.zeros((num_classes, training_context_n),dtype=np.float32)
-    # for i in range(num_classes):
-    #     initMatrix[i,i] = 1
-    #     initMatrix[i,i+num_classes] = 1
-    #     initMatrix[i,i+2*num_classes] = 1
-    #     initMatrix[i,i+3*num_classes] = 1
-    #     initMatrix[i,i+4*num_classes] = 1 # for num_c = 40
-    #     # initMatrix[i,i+5*num_classes] = 1
-    #     # initMatrix[i,i+6*num_classes] = 1
-    #     # initMatrix[i,i+7*num_classes] = 1 # for num_c = 70
-    # #     # initMatrix[i,i+8*num_classes] = 1
-    # #     # initMatrix[i,i+9*num_classes] = 1
-    # #     # initMatrix[i,i+10*num_classes] = 1
-    # #     # initMatrix[i,i+11*num_ classes] = 1 # for num_c = 100
 
     # CREATE PARAMETER SETTING AND NETWORK MODEL
 
@@ -419,8 +215,7 @@ for r in range(runs):
        'hyp_prior':hyp_prior,
        'external_signal_variance':explicit_sensor_variance,
        'excitation_bias':excitation_bias,
-       'bias_likelihood':False}) # 'alpha_init':0.001, 'momentum_init':0.9
-       #'bias_likelihood':True}) # 'alpha_init':0.001, 'momentum_init':0.9
+       'bias_likelihood':False})
 
     connect_likelihood = False
     abs_connectivity = np.float32(0.05)
@@ -428,15 +223,12 @@ for r in range(runs):
     with open(os.path.join(final_save_dir,"info.txt"),'w') as f:
        f.write(p.print_parameters())
        f.write("\n")
-       # f.write("num_classes = " + str(num_classes) + ", noise_variances=" + str(noise_variances))
-       #f.write("3 scaling varied circles, 2 init state " + str(c_train) + ", noise var in patterns 0.001")
        f.write("\n"+experiment_info)
        f.write("\n")
     f.close()
 
     # create new RNN model
     model = SCTRNN(p.num_io, p.num_c, p.tau_c, p.num_classes, init_state_init = p.init_state_init, init_state_learning = p.learn_init_states, weights_learning = p.learn_weights, bias_learning = p.learn_bias, tau_learning = p.learn_tau, external_contrib = p.training_external_contrib, aberrant_sensory_precision = p.aberrant_sensory_precision, excitation_bias = p.excitation_bias, rec_conn_factor = p.rec_connection_factor, variance_integration_mode = p.variance_integration_mode, hyp_prior = p.hyp_prior, external_signal_variance = p.external_signal_variance)
-    # model = SMTRNN(p.num_io, p.num_fh, p.num_sh, p.tau_io, p.tau_fh, p.tau_sh, p.num_classes, init_state_init_sh = p.init_state_init, init_state_learning = p.learn_init_states, external_contrib = p.training_external_contrib, aberrant_sensory_precision = p.aberrant_sensory_precision)
     model.add_BI_variance = True
     model.set_init_state_learning(c_train)
 
@@ -519,7 +311,6 @@ for r in range(runs):
            f.write("before learning: pattern generation error (proactive): " + str(history_generation_error_proactive[i]) + "\n")
     plot_results(results, num_timesteps, os.path.join(final_save_dir, "proactive_before-learning"), model.num_io, twoDim=True)
 
-    #COPY?
     if var_integration == 1:
         res, resv, resm, pe, wpe = model.generate(model.initial_states.W.array, num_timesteps, external_contrib = 1, external_input = xp.copy(xp.asarray(x_train[:test_batch_size,:])), epsilon_disturbance = 0)
     elif var_integration == 2:
@@ -555,50 +346,6 @@ for r in range(runs):
         if implicit_trajectory_noise > 0:
             print("Adding implicit trajectory noise")
             x_train += p.sqrt(trajectory_noise_variances) * np.random.randn(x_train.shape[0], x_train.shape[1])
-        if add_smooth_traj_noise:
-            print("Adding smooth trajectory noise")
-            for i in range(x_train.shape[0]):
-                x_train[i,:] += np.reshape(get_trajectory_noise(num_timesteps, int(num_timesteps/traj_noise_parts), dim=num_io), (num_io*num_timesteps,))
-
-
-        if use_derivatives == True:
-           # add also velocity and acceleration
-           for i in range(0, x_train.shape[0]):
-
-               reshaped_line = np.copy(np.reshape(x_train[i, 0:x_train.shape[1]],
-                                                  (num_timesteps, int(x_train.shape[1] / num_timesteps))))
-               reshaped_line_x = reshaped_line[:, 0]
-               reshaped_line_y = reshaped_line[:, 1]
-
-               # for velocity and acceleration
-               velocity_x = np.copy(np.reshape(np.gradient(reshaped_line_x), (num_timesteps,)))
-               velocity_y = np.copy(np.reshape(np.gradient(reshaped_line_y), (num_timesteps,)))
-
-               acceleration_x = np.reshape(np.gradient(velocity_x), (num_timesteps, 1))
-               acceleration_y = np.reshape(np.gradient(velocity_y), (num_timesteps, 1))
-
-               velocity_x = np.reshape(velocity_x, (num_timesteps, 1))
-               velocity_y = np.reshape(velocity_y, (num_timesteps, 1))
-
-               velocity = np.concatenate((velocity_x, velocity_y), axis=1)
-
-               acceleration = np.concatenate((acceleration_x, acceleration_y), axis=1)
-
-               # normalize input
-               reshaped_line = reshaped_line / np.amax(reshaped_line)
-               velocity = velocity / np.amax(velocity)
-               acceleration = acceleration / np.amax(acceleration)
-
-               reshaped_line = np.concatenate((reshaped_line, velocity, acceleration), axis=1)
-
-               if i == 0:
-                   x_train_extended = np.reshape(reshaped_line,
-                                                 (1, 3 * int(x_train.shape[1] / num_timesteps) * num_timesteps))
-               else:
-                   x_train_extended = np.concatenate((x_train_extended, np.reshape(reshaped_line, (
-                       1, 3 * int(x_train.shape[1] / num_timesteps) * num_timesteps))), axis=0)
-
-           x_train = x_train_extended
 
         if add_external_signal_variance:
             print("Add noise for sensor variance")
@@ -610,19 +357,15 @@ for r in range(runs):
 
         print(np.max([np.mean(np.var(x_train[x:num_classes*num_samples_per_class:num_classes,:],axis=0)) for x in range(num_classes)]))
 
-        # plt.figure()
-        # plt.plot(np.reshape(x_train[0,:], (70,2))[:,0], np.reshape(x_train[0,:], (70,2))[:,1])
-        # plt.savefig("train-traj-" + str(epoch))
-
         perm = np.random.permutation(x_train.shape[0])
 
         # here, one batch equals the full training set
         x_batch = xp.asarray(x_train[perm])
+        # tell the model which index of the training data will be for which class
         model.set_init_state_learning(c_train[perm])
 
         mean_init_states = chainer.Variable(xp.zeros((),dtype=xp.float32))
-        mean_init_states = chainer.functions.average(model.initial_states.W,axis=0) #keepdims=True
-        #mean_init_states = xp.mean(c0.array,axis=0) # using this instead causes no difference in resulting gradient of c0
+        mean_init_states = chainer.functions.average(model.initial_states.W,axis=0)
 
         # compute h_to_h bias mean
         if p.bias_likelihood:
@@ -649,23 +392,14 @@ for r in range(runs):
         x_t = x_batch[:, p.num_io*t:p.num_io*(t+1)]
         # next time step to be predicted (for evaluation)
         x_t1 = x_batch[:, p.num_io*(t+1):p.num_io*(t+2)]
-        # x_t = xp.reshape(x_batch[0][t,:], (1, p.num_io))
-        # x_t1 = xp.reshape(x_batch[0][t+1,:], (1, p.num_io))
-        # for i in range(1, p.batch_size):
-        #     x_t = np.concatenate((x_t, xp.reshape(x_batch[i][t,:], (1,p.num_io))),axis=0)
-        #     x_t1 = np.concatenate((x_t1, xp.reshape(x_batch[i][t+1,:], (1,p.num_io))),axis=0)
 
         # execute first forward step
-        #COPY?
         u_h, y, v = model(xp.copy(x_t), None) # initial states of u_h are set automatically according to model.classes
 
         # noisy output estimation
-        #y_out = y.array + xp.sqrt(v.array) * xp.random.randn()
+        # y_out = y.array + xp.sqrt(v.array) * xp.random.randn()
 
-        # compute prediction error, averaged over minibatch
-
-        #example_trajectory = np.zeros((num_timesteps, model.num_io))
-        #example_trajectory[0,:] = model.current_x.data[0,:]
+        # compute prediction error, averaged over batch
 
         if prediction_error_type == 'standard':
             # compare output to ground truth
@@ -696,7 +430,7 @@ for r in range(runs):
            u_h, y, v = model(xp.copy(x_t), u_h)
 
            # noisy output estimation
-           #y_out = y.array + xp.sqrt(v.array) * xp.random.randn()
+           # y_out = y.array + xp.sqrt(v.array) * xp.random.randn()
 
            # compute error for backprop for weights
            if prediction_error_type == 'standard':
@@ -709,17 +443,10 @@ for r in range(runs):
                     loss_i = chainer.functions.gaussian_nll(model.current_x, y, exponential.log(v))
            acc_loss += loss_i
 
-           #example_trajectory[t,:] = model.current_x.data[0,:]
-
            # compute error for evaluation purposes
            err += chainer.functions.mean_squared_error(chainer.Variable(x_t), y).array.reshape(()) * p.batch_size
 
            outv[t] = xp.mean(v.array)
-
-
-        # plt.figure()
-        # plt.plot(example_trajectory[:,0], example_trajectory[:,1])
-        # plt.savefig("blubb-" + str(epoch))
 
         # for each training sequence of this batch: compute loss for maintaining desired initial state variance
         for s in range(len(c_train)):
@@ -745,10 +472,8 @@ for r in range(runs):
         epochBatchProcessed = time.time()
         print("Elapsed time (batch processing): " + str(epochBatchProcessed - epochStart))
 
-        #        if p.learn_init_states:
         acc_init_loss *= p.init_state_loss_scaling
         acc_init_loss.backward()
-        #print("acc_init_loss.backward initial_states gradient: " + str(model.initial_states.W.grad[0][0]) + ", " + str(model.initial_states.W.grad[1][0]))
         acc_loss.backward()
 
         if p.bias_likelihood:
@@ -763,10 +488,7 @@ for r in range(runs):
         # printing and testing
         print("Done epoch " + str(epoch))
         print("Elapsed time (error computation): " + str(time.time() - epochBatchProcessed))
-        # print("Tau: " + str(model.tau_c.W.array[0]))
         error = err/p.batch_size/num_timesteps
-        #minVar_t = np.mean([np.min(np.mean(np.sqrt(outv[b][50:-1]),axis=1)) for b in range(p.batch_size)])
-        #maxVar_t = np.mean([np.max(np.mean(np.sqrt(outv[b][50:-1]),axis=1)) for b in range(p.batch_size)])
         mean_estimated_var = xp.mean(outv)
         history_training_error[epoch] = error
         history_training_variance_estimation[epoch] = mean_estimated_var
@@ -786,13 +508,12 @@ for r in range(runs):
            f.write("train MSE = " + str(error) + "\nmean estimated var: " + str(mean_estimated_var))
            f.write("initial state var: " + str(history_init_state_var[epoch]) + ", precision loss: " + str(acc_loss) + ", variance loss: " + str(acc_init_loss) + " + " + str(acc_bias_loss) + "\ninit states:\n")
            for i in range(p.num_classes):
-           # f.write('init_states = [' + str(model.initial_states.W[0][0]) + ',' + str(model.initial_states.W[0][1]) + '...], [' + str(model.initial_states.W[1][0]) + ',' + str(model.initial_states.W[1][1]) + '...], var: ' + str(np.mean(np.var(model.initial_states.W.array,axis=0))) + ', accs: ' + str(acc_loss) + " + " + str(acc_init_loss)+'\n')
                f.write("\t[" + str(model.initial_states.W[i][0]) + "," + str(model.initial_states.W[i][1]) + "...]\n")
         f.close()
 
         if epoch%save_interval == 1 or epoch == p.epochs:
-           # evaluate proactive generation
 
+           # evaluate proactive generation
            if var_integration == 1:
                res, resv, resm, u_h_history = model.generate(model.initial_states.W.array, num_timesteps, external_contrib = 0, epsilon_disturbance = 0, additional_output='activations')
            elif var_integration == 2:
@@ -813,7 +534,6 @@ for r in range(runs):
            plot_pca_activations(u_h_history, num_timesteps, os.path.join(final_save_dir, "pca_context_act_proactive_epoch-" + str(epoch).zfill(len(str(epochs)))), p.num_c, p.num_classes)
 
            # evaluate reactive generation
-           #COPY?
            if var_integration == 1:
                res, resv, resm, pe, wpe, u_h_history = model.generate(model.initial_states.W.array, num_timesteps, external_contrib = 1, external_input = xp.copy(xp.asarray(x_train[:test_batch_size,:])), epsilon_disturbance = 0, additional_output='activations')
            elif var_integration == 2:

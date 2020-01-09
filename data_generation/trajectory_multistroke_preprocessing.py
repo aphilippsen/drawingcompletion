@@ -2,39 +2,39 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.interpolate
 
-faces = np.load('data/drawings/multi-stroke/drawing-2019-02-14_faces.npy')
+faces = np.load('raw-drawings/drawing-2019-02-14_faces.npy')
 # data-specific preprocessing (merging wrong ones)
 # 35 and 36 should be the same
 pen_status_faces = [1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1]
 new_traj_index_faces = [0, 7, 14, 21, 28, 35, 43, 50, 57, 64]
 
-houses = np.load('data/drawings/multi-stroke/drawing-2019-02-15_houses.npy')
+houses = np.load('raw-drawings/drawing-2019-02-15_houses.npy')
 houses = houses[:-1]
 pen_status_houses = [1,0,1,0,1, 1,0,1,0,1, 1,0,1,0,1, 1,0,1,0,1, 1,0,1,0,1, 1,0,1,0,1, 1,0,1,0,1, 1,0,1,0,1, 1,0,1,0,1, 1,0,1,0,1]
 new_traj_index_houses = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45]
 
-# stars = np.load("data/drawings/multi-stroke/drawing-2019-02-17_stars.npy")
+# stars = np.load("raw-drawings/drawing-2019-02-17_stars.npy")
 # pen_status_stars = [1,1,1,1,1,1,1,1,1,1]
 # new_traj_index_stars = [0,1,2,3,4,5,6,7,8,9]
 
-# circles = np.load("data/drawings/multi-stroke/drawing-2019-02-18_circles.npy")
+# circles = np.load("raw-drawings/drawing-2019-02-18_circles.npy")
 # pen_status_circles = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 # new_traj_index_circles = [0,3,6,9,12,15,18,21,24,27]
 
-cars = np.load('data/drawings/multi-stroke/drawing-2019-11-05_12-03_car-10.npy')
+cars = np.load('raw-drawings/drawing-2019-11-05_12-03_car-10.npy')
 pen_status_cars = [1,0,1,0,1,0,1, 1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,]
 new_traj_index_cars = [0, 7, 14, 21, 28, 35, 42, 49, 56, 63]
 
-flowers = np.load("/home/anja/repos/cognitivemirroring/ChainerRNN/data/drawings/multi-stroke/drawing-2019-02-18_flowers.npy")
+flowers = np.load("raw-drawings/drawing-2019-02-18_flowers.npy")
 pen_status_flowers = [1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1]
 new_traj_index_flowers = [0,5,10, 15, 20, 25, 30, 35, 40, 45]
 
-human = np.load('data/drawings/multi-stroke/drawing-2019-11-05_10-53_human-figure-10.npy')
+human = np.load('raw-drawings/drawing-2019-11-05_10-53_human-figure-10.npy')
 human = np.concatenate((human[0:20], human[21:71]),axis=0)
 pen_status_human = [1,0,1,0,1,0,1, 1,0,1,0,1,0,1, 1,0,1,0,1,0,1, 1,0,1,0,1,0,1, 1,0,1,0,1,0,1, 1,0,1,0,1,0,1, 1,0,1,0,1,0,1, 1,0,1,0,1,0,1, 1,0,1,0,1,0,1, 1,0,1,0,1,0,1,]
 new_traj_index_human = [0, 7, 14, 21, 28, 35, 42, 49, 56, 63]
 
-rockets = np.load('data/drawings/multi-stroke/drawing-2019-11-05_14-08_rocket.npy')
+rockets = np.load('raw-drawings/drawing-2019-11-05_14-08_rocket.npy')
 pen_status_rockets = [1,0,1,0,1,0,1,0,1, 1,0,1,0,1,0,1,0,1, 1,0,1,0,1,0,1,0,1, 1,0,1,0,1,0,1,0,1, 1,0,1,0,1,0,1,0,1, 1,0,1,0,1,0,1,0,1, 1,0,1,0,1,0,1,0,1, 1,0,1,0,1,0,1,0,1, 1,0,1,0,1,0,1,0,1, 1,0,1,0,1,0,1,0,1]
 new_traj_index_rockets = [0, 9, 18, 27, 36, 45, 54, 63, 72, 81]
 

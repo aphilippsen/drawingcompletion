@@ -8,8 +8,6 @@ from distutils.dir_util import copy_tree
 
 # local imports
 from nets import SCTRNN, make_initial_state_zero, make_initial_state_random, NetworkParameterSetting, save_network, load_network
-
-
 from drawing_completion_functions import complete_drawing
 from inference import infer_initial_states_sctrnn
 from utils.visualization import plot_multistroke
@@ -19,29 +17,28 @@ gpu_id = 0 # -1 for CPU
 xp = np
 if gpu_id >= 0 and cuda.available:
     print("Use GPU!")
-    #If NVRTCError:
-    #$ export CUDA_HOME=/usr/local/cuda-9.1
-    #$ export PATH=${CUDA_HOME}/bin:${PATH}
-    #$ export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:$LD_LIBRARY_PATH
     cuda.get_device_from_id(gpu_id).use()
     xp = cuda.cupy
 else:
     print("Use CPU!")
     gpu_id = -1
 
-#data_set_name = '2019-11-05'
-#data_set_name = '2019-11-all'
+# if defined, this is the name of a subfolder of results/training where the trained networks to be used here are located
 data_set_name = "2019-11-all-no-is-loss"
 
+# which training parameter conditions to check
+condition_directories = ['1'] #, '1', '10', '100']
+# which hyp_prior condition to use for testing:
+test_hyp_priors = [1]
+
 # trajectory data
-# training_data_file = "/home/anja/repos/cognitivemirroring/ChainerRNN/data/drawings/multi-stroke/drawings-190215-faces-houses-flowers.npy"
-# training_data_file_classes = "/home/anja/repos/cognitivemirroring/ChainerRNN/data/drawings/multi-stroke/"
-training_data_file = "data/drawing-data-sets/drawings-191105-6-drawings.npy"
-training_data_file_classes = "data/drawing-data-sets/drawings-191105-6-drawings-classes.npy"
+training_data_file = "data_generation/drawing-data-sets/drawings-191105-6-drawings.npy"
+training_data_file_classes = "data_generation/drawing-data-sets/drawings-191105-6-drawings-classes.npy"
 num_timesteps = 90
 reduced_time_steps = 30
 num_classes = 6
 num_io = 3
+drawings_per_class = 10
 
 x_train = np.float32(np.load(training_data_file))
 x_start = np.reshape(np.mean(x_train[:,0:num_io],axis=0), (1,-1))
@@ -53,14 +50,16 @@ info = ""
 
 var_integration = 2
 
+
+
 # Which initial state to use for generation
 # is_selection_mode = 'zero' # take zero vector
 # is_selection_mode = 'mean' # take the mean of all training initial states
 # is_selection_mode = 'best' # try all available initial states and use the one that best replicates the existing part
 is_selection_mode = 'inference' # use backpropagation inference to infer the best fitting initial states
 
+# For how many epochs to perform inference
 inference_epochs=2000
-drawings_per_class = 10
 # How many of the num_timesteps do we want to provide to the network
 reduced_time_steps_list = [30]
 
@@ -78,22 +77,12 @@ run_directories = next(os.walk(training_dir))[1]
 for current_r in range(len(run_directories)):
     run_dir = os.path.join(training_dir, run_directories[current_r])
 
-    # which training parameter conditions to check
-    condition_directories = ['1000'] #, '1', '10', '100']
-
-    #print(str(condition_directories) + " " + str(data_set_name))
-
     for current_c in range(len(condition_directories)):
         network_dir = os.path.join(run_dir, condition_directories[current_c])
         inference_results_dir = os.path.join(os.path.join(completion_dir, run_directories[current_r]), condition_directories[current_c])
         pathlib.Path(inference_results_dir).mkdir(parents=True, exist_ok=True)
 
-        # TODO: manually labeled now the best in './results/training/2019-11-08_15-35_0902631/100'
-        # TODO: there is no "best" network sometimes!!!
         params, model = load_network(network_dir, model_filename='network-epoch-best.npz')
-
-        # which hyp_prior condition to use for testing:
-        test_hyp_priors = [1000]
 
         # do the inference and generation for all testing hyp_prior values, and for all training trajectories
         for hyp_prior in test_hyp_priors:
