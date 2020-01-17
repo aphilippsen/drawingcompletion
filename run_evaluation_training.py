@@ -2,10 +2,12 @@ import os
 import numpy as np
 from nets import load_network
 
-
+# which training parameter conditions to test
 train_hyp_all = ['0.001', '0.01', '0.1', '1', '10', '100', '1000']
+
+# maximum epoch used in training
 max_epoch = 30000
-data_set_name = '2019-11-all'
+data_set_name = 'example'
 eval_head_dir = './results/training/' + data_set_name
 
 error_training_proactive = np.empty((len(train_hyp_all),), dtype=object)
@@ -91,7 +93,4 @@ for train_hyp in train_hyp_all:
     plt.tight_layout()
     plt.savefig('proactive-results-H-' + str(train_hyp) + ".pdf")
     plt.close()
-
-        # reactive
-#res, resv, resm, pe, wpe, u_h_history, respos = model.generate(model.initial_states.W.array, num_timesteps, external_input = xp.copy(xp.asarray(x_train[:test_batch_size,:])), epsilon_disturbance = 0, additional_output='activations', external_signal_variance = explicit_sensor_variance)
 

@@ -17,7 +17,7 @@ dtw
 Contents:
 ---------
 
-1-4 describe the main flow for how to generate results using the source code.
+1.-4. describe the main flow for how to generate results using the source code.
 
 1. Data creation
 
@@ -32,8 +32,8 @@ Existing drawing data can be found in the subfolders, containing the raw drawing
 
 2. Training
 
-train_drawings.py:
-Main file to start the network training. Running it generates a folder in results/training/ with the current date and time. Inside this folder, one folder will be generated containing the trained network for each of the parameter conditions, and the initial weights are stored that were used for all networks in all conditions.
+run_training.py:
+Main file to start the network training. Running it generates a folder in results/training/ with name data_set_name in with subfolders are created for each call of run_training.py named after the current date and time. Inside these folder, for each parameter condition one folder will be generated in which the trained network is stored.
 
 3. Completion
 
@@ -42,10 +42,14 @@ Loads the trained networks (adjust the directory if necessary), then the network
 
 condition_directories and test_hyp_priors values have to be adjusted to decide which H_train and H_test condition to use.
 
+Results are stored in a folder in results/completion/ determined by data_set_name variable, using the following structure
+results/completion/[data_set_name]/[training run]/[training parameter]/[inference method]/test-[testing parameter]
+For "inference" as inference method, the subfolder inference_networks contains the inference results (networks with updated initial states) of the X performed inferences for this network.
+
 4. Evaluation
 
 run_evaluation_training.py:
-Evaluation of trained networks.
+Evaluation of trained networks. Results are stored in the corresponding folder in results/training/
 
 run_evaluation.py
 Evaluation of the performance of the network for completing the trajectories.

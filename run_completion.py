@@ -24,7 +24,7 @@ else:
     gpu_id = -1
 
 # if defined, this is the name of a subfolder of results/training where the trained networks to be used here are located
-data_set_name = "2019-11-all-no-is-loss"
+data_set_name = "example"
 
 # which training parameter conditions to check
 condition_directories = ['1'] #, '1', '10', '100']
@@ -38,6 +38,8 @@ num_timesteps = 90
 reduced_time_steps = 30
 num_classes = 6
 num_io = 3
+
+# number of drawings available per class, here, also used as the number of times a completion should be tried
 drawings_per_class = 10
 
 x_train = np.float32(np.load(training_data_file))
@@ -49,8 +51,6 @@ if gpu_id >= 0:
 info = ""
 
 var_integration = 2
-
-
 
 # Which initial state to use for generation
 # is_selection_mode = 'zero' # take zero vector

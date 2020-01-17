@@ -14,8 +14,8 @@ from nets import load_network
 
 # Plotting the internal representations of the trained networks
 
-training_data_file = "data/drawing-data-sets/drawings-191105-6-drawings.npy"
-data_set_name = '2019-11-all-no-is-loss'
+training_data_file = "data_generation/drawing-data-sets/drawings-191105-6-drawings.npy"
+data_set_name = '2019-11-all-new'
 # data_set_name = '2019-11-08'
 mode = 'inference'
 inf_epochs = np.concatenate((np.arange(1,2001,100), [2000]))

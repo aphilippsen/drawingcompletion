@@ -58,6 +58,8 @@ else:
    print("Use CPU!")
    gpu_id = -1
 
+data_set_name = "example"
+
 # Implicit trajectory noise
 implicit_trajectory_noise_runs = [0]
 
@@ -91,7 +93,7 @@ prediction_error_type = 'standard' # 'standard' or 'integrated' depending on how
 
 save_interval = 100        # interval for testing the production capability of the network and saving initial state information
 save_model_interval = 100  # interval for storing the learned model
-epochs = 30000             # total maximum number of epochs
+epochs = 3000             # total maximum number of epochs
 
 # stop when there is no new "best" epoch result for proactive generation within the last X epochs
 check_best_improvement_stop = True
@@ -110,7 +112,7 @@ num_classes = 6
 num_samples_per_class = 10
 
 
-save_location = "./results/training/"
+save_location = os.path.join("./results/training", data_set_name)
 now = datetime.datetime.now()
 expStr = str(now.year).zfill(4) + "-" + str(now.month).zfill(2) + "-" + str(now.day).zfill(2) + "_" + str(now.hour).zfill(2) + "-" + str(now.minute).zfill(2) + "_" + str(now.microsecond).zfill(7)
 save_dir = os.path.join(save_location, expStr)
@@ -131,14 +133,17 @@ for r in range(runs):
     num_io = 3
 
     # Implicit input variance between trajectories
-    implicit_trajectory_noise = 0.001
-    if len(implicit_trajectory_noise_runs) > 0:
+    if len(implicit_trajectory_noise_runs) > 1:
         implicit_trajectory_noise = implicit_trajectory_noise_runs[r]
+    else:
+        implicit_trajectory_noise = implicit_trajectory_noise_runs[0]
 
     # Explicit sensor variance for BI
     explicit_sensor_variance = 0.0001
-    if len(explicit_sensor_variance_runs) > 0:
+    if len(explicit_sensor_variance_runs) > 1:
         explicit_sensor_variance = explicit_sensor_variance_runs[r]
+    else:
+        explicit_sensor_variance = explicit_sensor_variance_runs[0]
 
     # Hypo prior: variance added for BI
     if len(hyp_prior_runs) > 0:
