@@ -22,7 +22,8 @@ from chainer.backends import cuda
 from chainer import optimizers, serializers
 from chainer.functions.math import exponential
 import numpy as np
-from dtw import dtw
+from utils.distance_measures import distance_measure
+
 # for evaluation
 #from sklearn.manifold import MDS
 #from matplotlib.mlab import PCA
@@ -33,16 +34,6 @@ from utils.normalize import normalize, range2norm, norm2range
 from utils.visualization import plot_results, plot_pca_activations
 
 gpu_id = 0 # -1 for CPU
-
-euclidean_distance = lambda x, y: np.abs(x-y)
-def evaluate_generation(target, generation, method='mse'):
-    if method == 'mse':
-        return chainer.functions.mean_squared_error(results[i,:], x_train_orig[i,:]).data.tolist()
-    elif method == 'dtw':
-        val = 0
-        for i in range(target.shape[1]):
-            val += dtw(target[1:,i], generation[:-1,i], dist=euclidean_distance)[0]
-        return val
 
 # Determine whether CPU or GPU should be used
 xp = np
@@ -58,19 +49,17 @@ else:
    print("Use CPU!")
    gpu_id = -1
 
-data_set_name = "example"
+###TODO
+data_set_name = "final_0.01-100_6x7"
 
-# Implicit trajectory noise
-implicit_trajectory_noise_runs = [0]
-
-# Explicit sensor noise that has influence on BI
-explicit_sensor_variance_runs = [0.001]
+# Explicit sensor noise added to the training data
+explicit_sensor_variance_runs = [0.01]
 
 # whether to add the explicit_sensor_variance to the training signal
 add_external_signal_variance = True
 
 # Hypo prior that influences BI: this determines the different H settings
-hyp_prior_runs = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
+hyp_prior_runs = [1, 0.001, 0.01, 0.1, 10, 100, 1000]
 
 # typically false, set to true if you want to use initial weights which are already stored somewhere, then define the location init_weight_dir here
 reuse_existing_weights = False
@@ -93,7 +82,7 @@ prediction_error_type = 'standard' # 'standard' or 'integrated' depending on how
 
 save_interval = 100        # interval for testing the production capability of the network and saving initial state information
 save_model_interval = 100  # interval for storing the learned model
-epochs = 3000             # total maximum number of epochs
+epochs = 30000             # total maximum number of epochs
 
 # stop when there is no new "best" epoch result for proactive generation within the last X epochs
 check_best_improvement_stop = True
@@ -104,12 +93,14 @@ experiment_info = "" # additional text for the info text file
 # which training data files to use
 training_data_file = "data_generation/drawing-data-sets/drawings-191105-6-drawings.npy"
 training_data_file_classes = "data_generation/drawing-data-sets/drawings-191105-6-drawings-classes.npy"
+#training_data_file = "data_generation/drawing-data-sets/drawings-6x10.npy"
+#training_data_file_classes = "data_generation/drawing-data-sets/drawings-6x10-classes.npy"
 
 x_train_orig = np.float32(np.load(training_data_file))
-# drawings in data file are in order 0 1 2 0 1 2 0 1 2...
+# drawings in data file are in order class1, class2, ... classN, class1, class2, ..., classN
 
 num_classes = 6
-num_samples_per_class = 10
+num_samples_per_class = 15
 
 
 save_location = os.path.join("./results/training", data_set_name)
@@ -126,19 +117,13 @@ if same_weights_per_run or same_bias_per_run:
 
 for r in range(runs):
 
-    best_epoch_error = 1000 # some high initial error value
+    best_epoch_error = np.Infinity
     best_epoch = 0
 
     num_timesteps = 90
     num_io = 3
 
-    # Implicit input variance between trajectories
-    if len(implicit_trajectory_noise_runs) > 1:
-        implicit_trajectory_noise = implicit_trajectory_noise_runs[r]
-    else:
-        implicit_trajectory_noise = implicit_trajectory_noise_runs[0]
-
-    # Explicit sensor variance for BI
+    # Set sensor variance sigma^2_sensor
     explicit_sensor_variance = 0.0001
     if len(explicit_sensor_variance_runs) > 1:
         explicit_sensor_variance = explicit_sensor_variance_runs[r]
@@ -152,13 +137,9 @@ for r in range(runs):
     final_save_dir = os.path.join(save_dir, str(hyp_prior))
     pathlib.Path(final_save_dir).mkdir(parents=True, exist_ok=True)
 
-    # Generate data for training by adding noise
+    # Load training data and add noise
     x_train_orig = np.float32(np.load(training_data_file))
     x_train = np.copy(x_train_orig)
-    if implicit_trajectory_noise > 0:
-        print("Adding implicit trajectory noise")
-        trajectory_noise_variances = np.tile([implicit_trajectory_noise], (num_classes*num_samples_per_class,x_train.shape[1]))
-        x_train += np.sqrt(trajectory_noise_variances) * np.random.randn(x_train.shape[0], x_train.shape[1])
 
     # adding sensor variance and set the sensor variance accordingly to mimic "accurate perception"
     external_signal_variance_vec = xp.ones((x_train.shape)) * explicit_sensor_variance
@@ -196,7 +177,7 @@ for r in range(runs):
 
     training_ext_contrib = 1
     training_tau = 2
-    training_context_n = 250
+    training_context_n = 100
     training_ini_var = 10
     aberrant_sensory_precision = 0
     excitation_bias = 1/training_context_n # default 0.05
@@ -310,7 +291,7 @@ for r in range(runs):
     results = cuda.to_cpu(res)
 
     for i in range(num_classes):
-       generation_error = evaluate_generation(x_train_orig[i,:].reshape((-1,num_io)), results[i,:].reshape((-1,num_io)), method='dtw')
+       generation_error = distance_measure(x_train_orig[i,:].reshape((-1,num_io)), results[i,:].reshape((-1,num_io)), method='dtw')
        history_generation_error_proactive[i] = [generation_error]
        with open(os.path.join(final_save_dir,"evaluation.txt"),'a') as f:
            f.write("before learning: pattern generation error (proactive): " + str(history_generation_error_proactive[i]) + "\n")
@@ -323,7 +304,7 @@ for r in range(runs):
     results = cuda.to_cpu(res)
 
     for i in range(p.num_classes):
-       generation_error = evaluate_generation(x_train_orig[i,:].reshape((-1,num_io)), results[i,:].reshape((-1,num_io)), method='dtw')
+       generation_error = distance_measure(x_train_orig[i,:].reshape((-1,num_io)), results[i,:].reshape((-1,num_io)), method='dtw')
        history_generation_error_reactive[i] = [generation_error]
        with open(os.path.join(final_save_dir, "evaluation.txt"),'a') as f:
            f.write("before learning: pattern generation error (reactive): " + str(history_generation_error_reactive[i]) + "\n")
@@ -348,9 +329,6 @@ for r in range(runs):
 
         x_train_orig = np.float32(np.load(training_data_file))
         x_train = np.copy(x_train_orig)
-        if implicit_trajectory_noise > 0:
-            print("Adding implicit trajectory noise")
-            x_train += p.sqrt(trajectory_noise_variances) * np.random.randn(x_train.shape[0], x_train.shape[1])
 
         if add_external_signal_variance:
             print("Add noise for sensor variance")
@@ -529,7 +507,7 @@ for r in range(runs):
 
            current_generation_error = np.zeros((1,num_classes))
            for i in range(p.num_classes):
-               generation_error_pro = evaluate_generation(x_train_orig[i,:].reshape((-1,num_io)), results[i,:].reshape((-1,num_io)), method='dtw')
+               generation_error_pro = distance_measure(x_train_orig[i,:].reshape((-1,num_io)), results[i,:].reshape((-1,num_io)), method='dtw')
                history_generation_error_proactive[i].append(generation_error_pro)
                current_generation_error[0,i] = generation_error_pro
                with open(os.path.join(final_save_dir, "evaluation.txt"), 'a') as f:
@@ -548,7 +526,7 @@ for r in range(runs):
            plot_results(results, num_timesteps, os.path.join(final_save_dir, "reactive_epoch-" + str(epoch).zfill(len(str(epochs)))), model.num_io, twoDim=True)
 
            for i in range(test_batch_size):
-               generation_error_re = evaluate_generation(x_train_orig[i,:].reshape((-1,num_io)), results[i,:].reshape((-1,num_io)), method='dtw')
+               generation_error_re = distance_measure(x_train_orig[i,:].reshape((-1,num_io)), results[i,:].reshape((-1,num_io)), method='dtw')
                history_generation_error_reactive[i].append(generation_error_re)
                with open(os.path.join(final_save_dir, "evaluation.txt"), 'a') as f:
                    f.write("pattern generation error (reactive): " + str(generation_error_re) + "\n")
@@ -606,9 +584,10 @@ for r in range(runs):
                         f.write("Best epoch: " + str(best_epoch) + " with error " + str(best_epoch_error))
                         f.write("\n")
                     f.close()
-                    from distutils.file_util import copy_file
-                    copy_file(os.path.join(final_save_dir, "network-epoch-"+str(best_epoch).zfill(len(str(epochs))) + ".npz"), os.path.join(final_save_dir, "network-epoch-best.npz"))
                     break
+
+    from distutils.file_util import copy_file
+    copy_file(os.path.join(final_save_dir, "network-epoch-"+str(best_epoch).zfill(len(str(epochs))) + ".npz"), os.path.join(final_save_dir, "network-epoch-best.npz"))
 
     save_network(final_save_dir, p, model, model_filename = "network-final")
 

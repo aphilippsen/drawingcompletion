@@ -21,6 +21,7 @@ def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection
     if x_start is None:
         x_start = np.float32(np.tile(0, (1, model.num_io)))
 
+    # TODO not required
     external_contrib_testing = np.zeros((time_steps,))
     external_contrib_testing[:reduced_time_steps] = 1
 
@@ -28,8 +29,23 @@ def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection
     # after the initial time steps, external input becomes unavailable=unreliable!
     external_signal_var_testing[reduced_time_steps:] = 1
 
+
+    # use input only until ... time steps
+    delete_from = reduced_time_steps+1
+    if gpu_id > -1:
+        input_traj_cut = chainer.cuda.to_gpu(xp.copy(chainer.cuda.to_cpu(input_traj.reshape((-1,model.num_io)))))
+    else:
+        input_traj_cut = xp.copy(input_traj.reshape((-1,model.num_io)))
+    for t in range(0, input_traj_cut.shape[0], time_steps):
+        input_traj_cut[t+delete_from:t+time_steps,:] = 0
+    input_traj_cut = input_traj_cut.reshape((input_traj.shape[0],-1))
+
     results_path = '.'
-    if is_selection_mode == 'mean':
+    if not isinstance(is_selection_mode, str):
+        # assume that a fixed IS is given
+        init_state = is_selection_mode
+
+    elif is_selection_mode == 'mean':
         init_state = np.reshape(np.mean(model.initial_states.W.array,axis=0), (1, model.num_c))
 
     elif is_selection_mode == 'zero':
@@ -37,7 +53,7 @@ def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection
 
     elif is_selection_mode == 'best':
         # init_state = np.reshape(model.initial_states.W.array[0,:], (1, model.num_c))
-        res, resv, resm, pe, wpe, respost = model.generate('best', time_steps, external_contrib = external_contrib_testing, external_input = input_traj, epsilon_disturbance = 0, hyp_prior = 1, external_signal_variance = external_signal_var_testing, x_start = x_start, use_init_state_loss=False)
+        res, resv, resm, pe, wpe, respost = model.generate('best', time_steps, external_contrib = external_contrib_testing, external_input = input_traj_cut, epsilon_disturbance = 0, hyp_prior = 1, external_signal_variance = external_signal_var_testing, x_start = x_start, use_init_state_loss=False)
 
         init_state = model.initial_states.W.array[model.used_is_idx,:] #xp.reshape(model.initial_states.W.array[model.used_is_idx,:], (len(model.used_is_idx), model.num_c))
 
@@ -56,6 +72,7 @@ def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection
                 inf_model.to_gpu()
             init_state = inf_model.initial_states.W.array
 
+
     model.add_BI_variance = add_BI_variance
 
     #  # use input only until ... time steps
@@ -63,16 +80,6 @@ def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection
     # input_traj_cut = chainer.cuda.to_gpu(np.copy(chainer.cuda.to_cpu(input_traj.reshape((-1,model.num_io)))))
     # input_traj_cut[delete_from:-1,:] = 0
     # input_traj_cut = input_traj_cut.reshape((input_traj.shape[0],-1))
-
-    # use input only until ... time steps
-    delete_from = reduced_time_steps+1
-    if gpu_id > -1:
-        input_traj_cut = chainer.cuda.to_gpu(xp.copy(chainer.cuda.to_cpu(input_traj.reshape((-1,model.num_io)))))
-    else:
-        input_traj_cut = xp.copy(input_traj.reshape((-1,model.num_io)))
-    for t in range(0, input_traj_cut.shape[0], time_steps):
-        input_traj_cut[t+delete_from:t+time_steps,:] = 0
-    input_traj_cut = input_traj_cut.reshape((input_traj.shape[0],-1))
 
     # generation with the inferred initial states, first 30 timesteps with input, after that without input
     res, resv, resm, pe, wpe, u_h_history, respost = model.generate(init_state, time_steps, external_contrib = external_contrib_testing, external_input = input_traj_cut, epsilon_disturbance = 0, hyp_prior = hyp_prior, external_signal_variance = external_signal_var_testing, additional_output='activations', x_start = x_start)

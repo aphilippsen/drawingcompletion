@@ -14,8 +14,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 import pickle
 
-import pdb
-
 # RECURRENT NEURAL NETWORK DEFINITIONS
 
 # Stochastic Continuous-Time Recurrent Neural Network
@@ -283,10 +281,6 @@ class SCTRNN(chainer.Chain):
                 #     x.array[i,1] = xp.random.normal(mu_2, sigma_2, 1)[0]
                 #
 
-                # if x.shape[0] > 1:
-                #     import pdb
-                #     pdb.set_trace()
-
                 # test_input_var = chainer.Variable(xp.reshape(xp.asarray(xp.float32([0.1,0.05,0.1])), (1,3)))
                 # test_input = chainer.Variable(xp.tile(xp.asarray(xp.float32([0.3])), (1,3)))
                 # test_pred_var = chainer.Variable(xp.reshape(xp.asarray(xp.float32([0.1,0.1,0.05])), (1,3)))
@@ -297,11 +291,11 @@ class SCTRNN(chainer.Chain):
                 # # => sigma_test: array([[0.22360681, 0.1825742 , 0.1825742 ]], dtype=float32)
 
 
-                if self.hyp_prior > 1000:
-                    # (self.hyp_prior - 1000) is a value a
-                    pred_var = (self.hyp_prior-1000) * chainer.Variable(xp.tile(xp.asarray(xp.float32([1])), (x.shape[0],x.shape[1])))
+                # if self.hyp_prior > 1000:
+                #     # (self.hyp_prior - 1000) is a value a
+                #     pred_var = (self.hyp_prior-1000) * chainer.Variable(xp.tile(xp.asarray(xp.float32([1])), (x.shape[0],x.shape[1])))
                 # testing condition, compare ICDL19_Daniel_plots.py
-                elif self.hyp_prior == -555:
+                if self.hyp_prior == -555:
                     # Set prior variance equal to input variance to have always equal contribution
                     pred_var = chainer.Variable(xp.tile(xp.asarray(xp.float32([self.external_signal_variance])), (x.shape[0],x.shape[1])))
                 else:
@@ -318,10 +312,10 @@ class SCTRNN(chainer.Chain):
                 if self.external_signal_variance is None:
                     input_var = pred_var
                 else:
-                    if self.hyp_prior > 1000:
-                        input_var = 1 / pred_var
-                    else:
-                        input_var = chainer.Variable(xp.tile(xp.asarray(xp.float32([self.external_signal_variance])), (x.shape[0],x.shape[1])))
+                    # if self.hyp_prior > 1000:
+                    #     input_var = 1 / pred_var
+                    # else:
+                    input_var = chainer.Variable(xp.tile(xp.asarray(xp.float32([self.external_signal_variance])), (x.shape[0],x.shape[1])))
                 input_mean = x
 
                 # print("set variances: input " + str(input_var) + " and pred " + str(pred_var))
@@ -388,7 +382,6 @@ class SCTRNN(chainer.Chain):
         if self.bias_learning:
             # u_h = chainer.functions.scale(self.x_to_h(x) + self.h_to_h(h), 1/self.tau_c()) + chainer.functions.scale(u_h, (1 - 1/self.tau_c()))
             # recurrent_connections = self.h_to_h(h)
-            # import pdb; pdb.set_trace()
             recurrent_connections = F.transpose(F.tensordot(self.h_to_h.W * self.rec_connectivity(), F.transpose(h), axes=1)) + F.tile(self.h_to_h.b, (h.shape[0], 1)) #F.reshape(self.h_to_h.b,(h.shape[0],self.num_c))
             # print(str(recurrent_connections.shape) +  " vs. " + str(self.h_to_h(h).shape))
             u_h = chainer.functions.scale(self.x_to_h(x) + recurrent_connections, 1/self.tau_c()) + chainer.functions.scale(u_h, (1 - 1/self.tau_c()))
@@ -599,7 +592,9 @@ class SCTRNN(chainer.Chain):
                 if external_input is None  or self.external_contrib == 0:
                     new_x = x_init # external_input is not used in network update
                 else:
-                    new_x = xp.reshape(external_input[i,self.num_io*t:self.num_io*(t+1)], (1,self.num_io))
+                    # new_x = xp.reshape(external_input[i,self.num_io*t:self.num_io*(t+1)], (1,self.num_io))
+                    new_x = external_input[i,self.num_io*t:self.num_io*(t+1)].reshape((1,self.num_io))
+
 
                 # generate forward step
                 u_h, y, v = self(new_x, u_h)

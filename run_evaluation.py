@@ -3,19 +3,28 @@ import os
 import matplotlib.pyplot as plt
 import pathlib
 
-data_set_name = 'example'
+#data_set_name = 'example'
+data_set_name = "tmpComp1000"#-training-set" #"training-2020-02-new-completion" # "tmp"#"training-2020-03_noise0.01"#test-set"
+#data_set_name = "2019-11-all-test-set"
 
 # Evaluation of the inference results
 # when train and test hyp-prior vary!
 
+# data for plotting the correct trajectories
 training_data_file = "data_generation/drawing-data-sets/drawings-191105-6-drawings.npy"
+x_train = np.float32(np.load(training_data_file))
 
 eval_head_dir = './results/completion/' + data_set_name
 mode = 'inference'
 # mode = 'best'
 
 # which testing H to check
-test_hyp_all = ['0.001', '0.01', '0.1', '1', '10', '100', '1000']
+#test_hyp_all = ['0.001', '0.01', '0.1', '1', '10', '100', '1000'] 
+test_hyp_all = ['0.001', '0.001', '1', '1', '1000', '1000', '1000']
+
+num_runs = 2 # how often the experiment was independently conducted
+num_inferences = 5 # how many test inferences have been performed in each run
+num_patterns = 6 # number of different training sample patterns
 
 # Which training H to use. If 'corresponding, use the same training = test H
 training_hyp = 'corresponding'
@@ -33,10 +42,6 @@ results = np.empty((len(test_hyp_all), 1), dtype=object)
 
 plot_dir = "./results/evaluation/" + data_set_name + '/' + mode + '-' + training_hyp
 pathlib.Path(plot_dir).mkdir(parents=True, exist_ok=True)
-
-num_runs = 10 # how often the experiment was independently conducted
-num_inferences = 10 # how many test inferences have been performed in each run
-num_patterns = 6 # number of different training sample patterns
 
 # Iterate across the testing hyp conditions
 test_hyp_idx = -1
@@ -73,11 +78,11 @@ for test_hyp in test_hyp_all:
         # each contains [num_images x 1], [num_inferences]
 
         # copy the errors of this run into the data structure
-        best_vis[test_hyp_idx,0][run_idx:run_idx+num_inferences,:] = np.transpose(np.resize(np.concatenate((np.array(err_best_vis[0][0]), np.array(err_best_vis[1][0]), np.array(err_best_vis[2][0]), np.array(err_best_vis[3][0]), np.array(err_best_vis[4][0]), np.array(err_best_vis[5][0]))), (num_patterns,10)))
-        best_new[test_hyp_idx,0][run_idx:run_idx+num_inferences,:] = np.transpose(np.resize(np.concatenate((np.array(err_best_new[0][0]), np.array(err_best_new[1][0]), np.array(err_best_new[2][0]), np.array(err_best_new[3][0]), np.array(err_best_new[4][0]), np.array(err_best_new[5][0]))), (num_patterns,10)))
+        best_vis[test_hyp_idx,0][run_idx:run_idx+num_inferences,:] = np.transpose(np.resize(np.concatenate((np.array(err_best_vis[0][0]), np.array(err_best_vis[1][0]), np.array(err_best_vis[2][0]), np.array(err_best_vis[3][0]), np.array(err_best_vis[4][0]), np.array(err_best_vis[5][0]))), (num_patterns,num_inferences)))
+        best_new[test_hyp_idx,0][run_idx:run_idx+num_inferences,:] = np.transpose(np.resize(np.concatenate((np.array(err_best_new[0][0]), np.array(err_best_new[1][0]), np.array(err_best_new[2][0]), np.array(err_best_new[3][0]), np.array(err_best_new[4][0]), np.array(err_best_new[5][0]))), (num_patterns,num_inferences)))
 
-        corr_vis[test_hyp_idx,0][run_idx:run_idx+num_inferences,:] = np.transpose(np.resize(np.concatenate((np.array(err_corr_vis[0][0]), np.array(err_corr_vis[1][0]), np.array(err_corr_vis[2][0]), np.array(err_corr_vis[3][0]), np.array(err_corr_vis[4][0]), np.array(err_corr_vis[5][0]))), (num_patterns,10)))
-        corr_new[test_hyp_idx,0][run_idx:run_idx+num_inferences,:] = np.transpose(np.resize(np.concatenate((np.array(err_corr_new[0][0]), np.array(err_corr_new[1][0]), np.array(err_corr_new[2][0]), np.array(err_corr_new[3][0]), np.array(err_corr_new[4][0]), np.array(err_corr_new[5][0]))), (num_patterns,10)))
+        corr_vis[test_hyp_idx,0][run_idx:run_idx+num_inferences,:] = np.transpose(np.resize(np.concatenate((np.array(err_corr_vis[0][0]), np.array(err_corr_vis[1][0]), np.array(err_corr_vis[2][0]), np.array(err_corr_vis[3][0]), np.array(err_corr_vis[4][0]), np.array(err_corr_vis[5][0]))), (num_patterns,num_inferences)))
+        corr_new[test_hyp_idx,0][run_idx:run_idx+num_inferences,:] = np.transpose(np.resize(np.concatenate((np.array(err_corr_new[0][0]), np.array(err_corr_new[1][0]), np.array(err_corr_new[2][0]), np.array(err_corr_new[3][0]), np.array(err_corr_new[4][0]), np.array(err_corr_new[5][0]))), (num_patterns,num_inferences)))
 
         for pat in range(num_patterns):
             results[test_hyp_idx,0][run_idx:run_idx+num_inferences,pat] = current_results[pat][0]
@@ -133,16 +138,21 @@ plt.errorbar(np.arange(7), confu_mean, yerr=confu_std)
 """
 
 confusions = np.zeros(num_test_hyp)
-for i in range(7):
+correct_class = np.zeros(num_test_hyp)
+for i in range(num_test_hyp):
     # confusions[i] = (np.count_nonzero((best_new[i,0]-corr_new[i,0])==0))
     # confusions[i] = np.count_nonzero(((best_new[i,0]-corr_new[i,0])==0) & (best_new[i,0]<0.01))
 
     # count how many were NOT correctly classified (the "best" error measure equals the "corresponding")
     confusions[i] = np.count_nonzero(((best_new[i,0]-corr_new[i,0])!=0))
+    # count how many were correctly classified
+    correct_class[i] = np.count_nonzero(((best_new[i,0]-corr_new[i,0])==0))
+
 
 # percentage
-confusions = confusions/600*100
-
+num_pics = best_new[0,0].shape[0] * best_new[0,0].shape[1]
+confusions = confusions/num_pics*100
+correct_class = correct_class/num_pics*100
 
 ######################################
 # Final statistics plot              #
@@ -179,7 +189,7 @@ ax = fig.add_subplot(111)
 ax.set_xlabel('prior parameter condition')
 ax.set_ylabel('Drawing error (DTW distance)')
 
-for line_offset in np.arange(-0.005, 0.061, 0.005):
+for line_offset in np.arange(-0.005, 0.2, 0.01):
     plt.plot([-1, 16], orientation_y_line+line_offset, 'lightgray', zorder=0, linewidth=5)
 
 for pat in range(num_patterns):
@@ -194,9 +204,9 @@ for pat in range(num_patterns):
         ax.boxplot([lower_std_dev, lower_quantile, median_value, upper_quantile, upper_std_dev], positions=[x[pat][bla]], widths=[0.2], boxprops=dict(color=colors[pat],linewidth=5), medianprops=dict(color=colors[pat], linewidth=5), flierprops=dict(color=colors[pat], linewidth=5), whiskerprops=dict(color=colors[pat], linewidth=5), capprops=dict(color=colors[pat], linewidth=5), showfliers=False)
 
         if bla == 0:
-            ax.scatter(np.repeat(x[pat][bla], len(best_new[bla][0][:,pat])), best_new[bla][0][:,pat], linewidth=5, color=colors[pat], label=pattern_category[pat], s=100,marker='o')
+            ax.scatter(np.repeat(x[pat][bla], len(best_new[bla][0][:,pat])), best_new[bla][0][:,pat], color=colors[pat], label=pattern_category[pat], s=100,marker='o')
         else:
-            ax.scatter(np.repeat(x[pat][bla], len(best_new[bla][0][:,pat])), best_new[bla][0][:,pat], linewidth=5, color=colors[pat], s=100,marker='o')
+            ax.scatter(np.repeat(x[pat][bla], len(best_new[bla][0][:,pat])), best_new[bla][0][:,pat], color=colors[pat], s=100,marker='o')
 
 
 #        ax.scatter(x[pat][bla], median_best_new, color=colors[pat], marker='s', s=1000)
@@ -207,7 +217,7 @@ for pat in range(num_patterns):
 
 plt.xticks(x[2], my_xticks)
 ax.set_xlim([-0.2, 15.8])
-ax.set_ylim([-0.002, 0.05])
+ax.set_ylim([-0.002, 0.2])
 fig.legend(loc=(0.855, 0.47))
 fig.tight_layout()
 plt.savefig(os.path.join(plot_dir, 'completion_new-part_best.' + output_format))
@@ -219,7 +229,7 @@ ax = fig.add_subplot(111)
 ax.set_xlabel('prior parameter condition')
 ax.set_ylabel('Drawing error (DTW distance)')
 
-for line_offset in np.arange(-0.005, 0.061, 0.005):
+for line_offset in np.arange(-0.005, 0.2, 0.01):
     plt.plot([-1, 16], orientation_y_line+line_offset, 'lightgray', zorder=0, linewidth=5)
 
 for pat in range(num_patterns):
@@ -241,7 +251,7 @@ for pat in range(num_patterns):
     # ax.errorbar(x[pat], corr_new_means[:,pat], yerr=corr_new_std[:,pat], color=colors[pat], ecolor=colors[pat], fmt='o', markersize=20, capsize=10, capthick=5, elinewidth=5, barsabove=True, label=pattern_category[pat])
 plt.xticks(x[2], my_xticks)
 ax.set_xlim([-0.2, 15.8])
-ax.set_ylim([-0.002, 0.05])
+ax.set_ylim([-0.002, 0.2])
 fig.legend(loc=(0.855, 0.47))
 fig.tight_layout()
 plt.savefig(os.path.join(plot_dir,'completion_new-part_correct.' + output_format))
@@ -253,7 +263,7 @@ ax = fig.add_subplot(111)
 ax.set_xlabel('prior parameter condition')
 ax.set_ylabel('Drawing error (DTW distance)')
 
-for line_offset in np.arange(-0.005, 0.061, 0.005):
+for line_offset in np.arange(-0.005, 0.2, 0.01):
     plt.plot([-1, 16], orientation_y_line+line_offset, 'lightgray', zorder=0, linewidth=5)
 
 for pat in range(num_patterns):
@@ -274,7 +284,7 @@ for pat in range(num_patterns):
     # ax.errorbar(x[pat], best_vis_means[:,pat], yerr=best_vis_std[:,pat], color=colors[pat], ecolor=colors[pat], fmt='o', markersize=20, capsize=15, capthick=5, elinewidth=5, barsabove=True, label=pattern_category[pat])
 plt.xticks(x[2], my_xticks)
 ax.set_xlim([-0.2, 15.8])
-ax.set_ylim([-0.002, 0.05])
+ax.set_ylim([-0.002, 0.2])
 fig.legend(loc=(0.855, 0.47))
 fig.tight_layout()
 plt.savefig(os.path.join(plot_dir,'completion_visible-part_best.' + output_format))
@@ -286,7 +296,7 @@ ax = fig.add_subplot(111)
 ax.set_xlabel('prior parameter condition')
 ax.set_ylabel('Drawing error (DTW distance)')
 
-for line_offset in np.arange(-0.005, 0.061, 0.005):
+for line_offset in np.arange(-0.005, 0.2, 0.01):
     plt.plot([-1, 16], orientation_y_line+line_offset, 'lightgray', zorder=0, linewidth=5)
 
 for pat in range(num_patterns):
@@ -307,7 +317,7 @@ for pat in range(num_patterns):
     # ax.errorbar(x[pat], corr_vis_means[:,pat], yerr=corr_vis_std[:,pat], color=colors[pat], ecolor=colors[pat], fmt='o', markersize=20, capsize=10, capthick=5, elinewidth=5, barsabove=True, label=pattern_category[pat])
 plt.xticks(x[2], my_xticks)
 ax.set_xlim([-0.2, 15.8])
-ax.set_ylim([-0.002, 0.05])
+ax.set_ylim([-0.002, 0.2])
 fig.legend(loc=(0.855, 0.47))
 fig.tight_layout()
 plt.savefig(os.path.join(plot_dir, 'completion_visible-part_correct.' + output_format))
@@ -321,8 +331,6 @@ plt.close()
 # due to a bug (i forgot to call cuda.to_cpu before storing the results, some
 # files might only be possible to open on a cuda-installed PC...
 
-
-x_train = np.float32(np.load(training_data_file))
 
 from chainer import cuda
 
@@ -342,8 +350,9 @@ image_idx_start = 0 # required if different lengths should be plot for making a 
 traj_lengths_to_plot = [90]
 
 figWidth = 50
-# run_idx = [6,7,8]
-run_idx = [0,1,2,3,4,5,6,7,8,9]
+# inf_idx = [6,7,8]
+#inf_idx = [0,1,2,3,4,5,6,7,8,9]
+inf_idx = list(np.arange(num_inferences))
 
 
 for curr_r in range(num_runs):
@@ -355,22 +364,22 @@ for curr_r in range(num_runs):
             plt.rcParams.update({'font.size': 35, 'legend.fontsize': 30})
             curr_subplot=0
             for pat in range(num_patterns):
-                for r in range(len(run_idx)):
-                    input_traj_idx = run_idx[r]*num_classes+pat
-                    print(str(run_idx[r]) + ", " + str(pat) + ", " + str(input_traj_idx))
+                for ii in inf_idx:
+                    input_traj_idx = ii*num_classes+pat
+                    print(str(ii) + ", " + str(pat) + ", " + str(input_traj_idx))
 
-                    ax = fig.add_subplot(num_patterns,len(run_idx),1 + curr_subplot)
+                    ax = fig.add_subplot(num_patterns,len(inf_idx),1 + curr_subplot)
                     # ax.set_xlabel('$x_0$')
                     # ax.set_ylabel('$x_1$')
                     ax.set_xlim([-0.9, 0.9])
                     ax.set_ylim([-0.9, 1])
-                    # if run_idx[r] > 0:
+                    # if ii > 0:
                     plt.yticks([], [])
                     # if pat < 2:
                     plt.xticks([], [])
 
                     ax.plot(x_train[input_traj_idx,:].reshape((-1,input_dim))[0:min(30,l),0], x_train[input_traj_idx,:].reshape((-1,input_dim))[0:min(30,l),1], 'orange', linewidth = 5)
-                    traj = cuda.to_cpu(results[test_hyp_condition][0][curr_r*num_runs+run_idx[r],pat].reshape((num_timesteps, input_dim)))
+                    traj = cuda.to_cpu(results[test_hyp_condition][0][ii*num_runs+curr_r,pat].reshape((num_timesteps, input_dim)))
                     for t in range(1, l):
                         if int(np.round(traj[t,2])) == 1:
                             if t < given_part:
@@ -382,7 +391,7 @@ for curr_r in range(num_runs):
                                 ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'lightgray', linewidth = 5)
                             else:
                                 ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], '#11ff11', linewidth = 5)
-                    if r == 4:
+                    if ii == np.floor(num_inferences/2):
                         # in the middle put the title
                         if pat == 0:
                             plt.title('FACE')

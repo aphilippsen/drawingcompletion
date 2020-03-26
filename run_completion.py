@@ -11,7 +11,7 @@ from nets import SCTRNN, make_initial_state_zero, make_initial_state_random, Net
 from drawing_completion_functions import complete_drawing
 from inference import infer_initial_states_sctrnn
 from utils.visualization import plot_multistroke
-from utils.distance_measures import dtw_distance
+from utils.distance_measures import distance_measure
 
 gpu_id = 0 # -1 for CPU
 xp = np
@@ -24,7 +24,9 @@ else:
     gpu_id = -1
 
 # if defined, this is the name of a subfolder of results/training where the trained networks to be used here are located
-data_set_name = "example"
+#data_set_name = "example"
+data_set_name = "final_0.01-100"#"tmpComp1-training-set"#"training-2020-02-new-completion"#"training-2020-03_noise0.01"#test-set"
+#data_set_name = "2019-11-all-test-set"
 
 # which training parameter conditions to check
 condition_directories = ['1'] #, '1', '10', '100']
@@ -34,13 +36,15 @@ test_hyp_priors = [1]
 # trajectory data
 training_data_file = "data_generation/drawing-data-sets/drawings-191105-6-drawings.npy"
 training_data_file_classes = "data_generation/drawing-data-sets/drawings-191105-6-drawings-classes.npy"
+#training_data_file = "data_generation/drawing-data-sets/drawings-191105-6-drawings-test-set.npy"
+#training_data_file_classes = "data_generation/drawing-data-sets/drawings-191105-6-drawings-test-set-classes.npy"
 num_timesteps = 90
 reduced_time_steps = 30
 num_classes = 6
 num_io = 3
 
-# number of drawings available per class, here, also used as the number of times a completion should be tried
-drawings_per_class = 10
+# number of drawings available per class (completion is tried once for every available drawing)
+drawings_per_class = 5
 
 x_train = np.float32(np.load(training_data_file))
 x_start = np.reshape(np.mean(x_train[:,0:num_io],axis=0), (1,-1))
@@ -160,7 +164,7 @@ for current_r in range(len(run_directories)):
 
                         generated_trajectory = res[curr_class,:].reshape((-1,model.num_io))
                         correct_trajectory = input_traj[curr_class,:].reshape((-1,model.num_io))
-                        traj_vis_to_corr = dtw_distance(correct_trajectory[1:reduced_time_steps,:], generated_trajectory[0:reduced_time_steps-1,:])
+                        traj_vis_to_corr = distance_measure(correct_trajectory[1:reduced_time_steps,:], generated_trajectory[0:reduced_time_steps-1,:], method='dtw')
 
                         all_trajectories = x_train[p:p+num_classes,:]
                         traj_vis_to_best = 100 # some high PE for init
@@ -168,7 +172,7 @@ for current_r in range(len(run_directories)):
                         for i in range(all_trajectories.shape[0]):
                             # compare to every trajectory
                             current_trajectory = all_trajectories[i,:].reshape((-1,model.num_io))
-                            current_best_PE = dtw_distance(current_trajectory[1:reduced_time_steps,:], generated_trajectory[0:reduced_time_steps-1,:])
+                            current_best_PE = distance_measure(current_trajectory[1:reduced_time_steps,:], generated_trajectory[0:reduced_time_steps-1,:], method='dtw')
                             # store if it has the smallest PE so far:
                             if current_best_PE < traj_vis_to_best:
                                 traj_vis_to_best = current_best_PE
@@ -179,7 +183,7 @@ for current_r in range(len(run_directories)):
 
                         # PE of traj_new part
                         # to the correct trajectory
-                        traj_new_to_corr = dtw_distance(correct_trajectory[reduced_time_steps+1:,:], generated_trajectory[reduced_time_steps:-1,:])
+                        traj_new_to_corr = distance_measure(correct_trajectory[reduced_time_steps+1:,:], generated_trajectory[reduced_time_steps:-1,:], method='dtw')
 
                         # to any (the best) trajectory
                         traj_new_to_best = 100 # some high PE for init
@@ -187,7 +191,7 @@ for current_r in range(len(run_directories)):
                         for i in range(all_trajectories.shape[0]):
                             # compare to every trajectory
                             current_trajectory = all_trajectories[i,:].reshape((-1,model.num_io))
-                            current_best_PE = dtw_distance(current_trajectory[reduced_time_steps+1:,:], generated_trajectory[reduced_time_steps:-1,:])
+                            current_best_PE = distance_measure(current_trajectory[reduced_time_steps+1:,:], generated_trajectory[reduced_time_steps:-1,:], method='dtw')
                             # store if it has the smallest PE so far:
                             if current_best_PE < traj_new_to_best:
                                 traj_new_to_best = current_best_PE

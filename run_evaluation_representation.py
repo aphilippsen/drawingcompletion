@@ -14,26 +14,37 @@ from nets import load_network
 
 # Plotting the internal representations of the trained networks
 
+num_inferences = 5 # how many inferences have been performed in each run to test the network
+num_patterns = 6 # number of different training sample patterns
+
 training_data_file = "data_generation/drawing-data-sets/drawings-191105-6-drawings.npy"
-data_set_name = '2019-11-all-new'
-# data_set_name = '2019-11-08'
+#data_set_name = 'example'
+data_set_name = "tmp" #"training-2020-02-test-set"
+#data_set_name = "2019-11-all-test-set"
 mode = 'inference'
 inf_epochs = np.concatenate((np.arange(1,2001,100), [2000]))
 
-for training_hyp in ['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
+training_hyp_all = ['0.001', '0.001','0.001', '1', '1', '1', '1'] # ['0.001', '0.01', '0.1', '1', '10', '100', '1000']
 
-    num_timesteps = 90
-    num_neurons = 250
+num_timesteps = 90
+num_neurons = 250
+graphics_extension = ".png"
 
-    graphics_extension = ".png"
+# this code is only for one reduced_time_steps at a time! (reduced=0 is the array index that should be used)
+reduced = 0
 
-    # this code is only for one reduced_time_steps at a time! (reduced=0 is the array index that should be used)
-    reduced = 0
+# for counting correct class inferences
+correct_class = np.empty((len(training_hyp_all),), dtype=object)
 
-    # test across all testing conditions? this determines which inference data are used for learning the PCA mapping
+training_hyp_idx = -1
+for training_hyp in training_hyp_all:
+    training_hyp_idx += 1
+    correct_class[training_hyp_idx] = np.zeros((num_patterns))
+
+    # Perform the PCA on inference data of all testing conditions?
     #test_hyp_all = ['0.001', '0.01', '0.1', '1', '10', '100', '1000']
     #eval_setting = "pca-all"
-    # or only for the corresponding one
+    # ... or only on inference data of the corresponding testing condition?
     eval_setting = "pca-only-one"
     test_hyp_all = [training_hyp]
 
@@ -46,13 +57,11 @@ for training_hyp in ['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
     plotting_test_hyps = [test_hyp_all.index(training_hyp)]
 
     eval_head_dir = './results/completion/' + data_set_name
-
     result_dir = "./results/evaluation/" + data_set_name + "/" + mode + '-' + training_hyp
     pathlib.Path(result_dir).mkdir(parents=True, exist_ok=True)
 
-    num_runs = 10 # how often the experiment was independently conducted
-    num_inferences = 10 # how many inferences have been performed in each run to test the network
-    num_patterns = 6 # number of different training sample patterns
+    dir_list = next(os.walk(eval_head_dir))[1]
+    num_runs = len(dir_list)
 
     # data structures for collecting the distances between different training samples in the neural activation space in each time step
     mean_inner_dist_per_timestep = np.zeros((num_runs, num_timesteps))
@@ -69,7 +78,7 @@ for training_hyp in ['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
     mean_dist_training_is_epochs = np.zeros((num_runs, len(inf_epochs)))
 
     # Analysis is performed separately for each of the trained networks (=runs) with the above defined H_train
-    dir_list = next(os.walk(eval_head_dir))[1]
+
     dist_to_corresponding_training_is_all = np.empty((len(dir_list),),dtype=object)
     dist_between_training_is_all = np.empty((len(dir_list),),dtype=object)
 
@@ -107,7 +116,6 @@ for training_hyp in ['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
             # load the current history
             uh = np.load(eval_dir + "/final-uh-history-"+test_hyp+"_mode-"+mode+".npy")
 
-# TODO: USE for 2019-11-all-new (init state stored separately!)
             final_is = np.load(eval_dir + "/final-inferred-is-"+test_hyp+"_mode-"+mode+".npy")
 
             # that's how the loaded uh should look like:
@@ -116,8 +124,12 @@ for training_hyp in ['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
             for i in range(uh.shape[0]): # for all pattern classes
                 for j in range(len(uh[i,0])): # for all inferences for this pattern
                     uh_history[test_hyp_idx,0][j,i] = uh[i,0][j].reshape((num_timesteps, num_neurons))
-#TODO: USE for 2019-11-all-new (init state stored separately!)
-                    inferred_is[test_hyp_idx,0][j,0] = final_is[i,0][j]
+                    inferred_is[test_hyp_idx,0][j,0] = final_is[0,0][j]
+
+                    # evaluate whether inferred IS is correct or not
+                    recogn_is = np.argmin(np.sqrt(np.sum((trained_is - np.tile(inferred_is[test_hyp_idx,0][j,0][i,:],(num_patterns,1)))**2,axis=1)))
+                    if recogn_is == i:
+                        correct_class[training_hyp_idx][i] += 1
 
             # get the trained initial states and the inferred initial states from all the ten inferences
             inf_nets_path = os.path.join(eval_dir, "inference_networks")
@@ -125,11 +137,10 @@ for training_hyp in ['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
             no_cupy = False
             try:
                 for curr_inf in range(len(inf_nets_list)):
-                    # load each and extract and store the initial states
-#TODO DELETE
-                    # params, model = load_network(os.path.join(inf_nets_path, inf_nets_list[curr_inf]), model_filename='network-final')
-#TODO DELETE
-                    # inferred_is[test_hyp_idx,0][curr_inf,0] = model.initial_states.W.array
+                    # not required any more, as data is stored separately (loaded as final_is)
+                    # # load each and extract and store the initial states
+                    # # params, model = load_network(os.path.join(inf_nets_path, inf_nets_list[curr_inf]), model_filename='network-final')
+                    # # inferred_is[test_hyp_idx,0][curr_inf,0] = model.initial_states.W.array
 
                     try:
                         for pat in range(num_patterns):
@@ -144,13 +155,10 @@ for training_hyp in ['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
                         no_cupy = True
             except:
                 print("Cannot load networks due to absence of cupy!!!")
-            # Testing: set inferred_is to first time step of uh_history
-            #for i in range(uh.shape[0]): # for all pattern classes
-            #    for j in range(len(uh[i,0])): # for all inferences for this pattern
-            #         inferred_is[test_hyp_idx,0][j,0][i,:] = uh_history[test_hyp_idx,0][j,i][0,:]
 
 
-        # reshape everything to (-1, 250) for preparing for PCA
+
+        # reshape everything to (-1, num_neurons) for preparing for PCA
         inferred_is_temp = np.empty((len(test_hyp_all),1),dtype=object)
         for i in range(len(test_hyp_all)):
             inferred_is_temp[i,0] = np.concatenate(inferred_is[i,0][:,0],axis=0)
@@ -161,21 +169,20 @@ for training_hyp in ['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
             uh_history_temp[i,0] = np.concatenate(uh_history[i,0].reshape((-1,1))[:,0],axis=0)
         all_uh_history = np.concatenate(uh_history_temp[:,0],axis=0)
 
-        # all neuron activations collected into one large (-1, 250) array
+        # all neuron activations collected into one large (-1, num_neurons) array
         all_neuron_activations = np.concatenate((trained_is, all_inferred_is, all_uh_history))
         all_initial_states = np.concatenate((trained_is, all_inferred_is))
 
         # Can do PCA either on the whole trajectory of activations or only on the initial states
         data_for_pca_transform = all_neuron_activations
         # data_for_pca_transform = all_initial_states
-    #    if len(data_for_pca_transform)
 
         # scaling data to achieve mean=0 and var=1
         scaler = StandardScaler().fit(data_for_pca_transform)
         data_for_pca_transform_scaled = scaler.transform(data_for_pca_transform)
 
         # create PCA mapping
-        pca = PCA(n_components=250)
+        pca = PCA(n_components=num_neurons)
         pca.fit(data_for_pca_transform_scaled)
         all_pca_data = pca.transform(data_for_pca_transform_scaled)
 
@@ -228,12 +235,12 @@ for training_hyp in ['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
         # store all the results as text files
         with open(os.path.join(result_dir, eval_setting + "_training-is_" + dir_list[curr_r] + "_H-" + str(training_hyp) + ".txt"), "w") as f:
             f.write('class')
-            for i in range(250):
+            for i in range(num_neurons):
                 f.write('\tdim' + str(i))
             f.write('\n')
             for pa in range(num_patterns):
                 f.write(str(pa))
-                for i in range(250):
+                for i in range(num_neurons):
                     f.write('\t' + str(pca_trained_is[pa,i]))
                 f.write('\n')
         np.save(os.path.join(result_dir, eval_setting + "_training-is_" + dir_list[curr_r] + "_H-" + str(training_hyp) + ".npy"), pca_trained_is)
@@ -242,12 +249,12 @@ for training_hyp in ['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
             for inf in range(num_inferences): # per inference
                 with open(os.path.join(result_dir, eval_setting + "_inferred-is_" + dir_list[curr_r] + '-' + str(inf) + '_H-' + test_hyp_all[h] + ".txt"), "w") as f:
                     f.write('class')
-                    for i in range(250):
+                    for i in range(num_neurons):
                         f.write('\tdim' + str(i))
                     f.write('\n')
                     for pa in range(num_patterns):
                         f.write(str(pa))
-                        for i in range(250):
+                        for i in range(num_neurons):
                             f.write('\t' + str(pca_inferred_is[h,0][inf,0][pa,i]))
                         f.write('\n')
                 np.save(os.path.join(result_dir, eval_setting + "_inferred-is_" + dir_list[curr_r] + '-' + str(inf) + '_H-' + test_hyp_all[h] + ".npy"), pca_inferred_is[h,0][inf,0])
@@ -257,98 +264,22 @@ for training_hyp in ['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
                 for pa in range(num_patterns): # per pattern class
                     with open(os.path.join(result_dir, eval_setting + "_uh-history_" + dir_list[curr_r] + '-' + str(inf) + "_pattern-" + str(pa) + '_H-' + test_hyp_all[h] + ".txt"), "w") as f:
                         f.write('t')
-                        for i in range(250):
+                        for i in range(num_neurons):
                             f.write('\tdim' + str(i))
                         f.write('\n')
                         for t in range(num_timesteps):
                             f.write(str(pa))
-                            for i in range(250):
+                            for i in range(num_neurons):
                                 f.write('\t' + str(pca_uh_history[h,0][inf,pa][t,i]))
                             f.write('\n')
                     np.save(os.path.join(result_dir, eval_setting + "_uh-history_" + dir_list[curr_r] + '-' + str(inf) + "_pattern-" + str(pa) + '_H-' + test_hyp_all[h] + ".npy"), pca_uh_history[h,0][inf,pa])
                     if not no_cupy:
                         np.save(os.path.join(result_dir, eval_setting + "_is-history_" + dir_list[curr_r] + '-' + str(inf) + "_pattern-" + str(pa) + '_H-' + test_hyp_all[h] + ".npy"), pca_is_history[h,0][inf,pa])
 
-
-        """
-        # old STATISTICS
-
-        pca_inferred_is_temp = np.empty((len(test_hyp_all),1),dtype=object)
-        for i in range(len(test_hyp_all)):
-            pca_inferred_is_temp[i,0] = np.concatenate(pca_inferred_is[i,0][:,0],axis=0)
-        all_pca_inferred_is = np.concatenate(pca_inferred_is_temp[:,0],axis=0)
-
-        for hyp in plotting_test_hyps:
-            pairwise_distances_inferred_is = np.zeros((num_patterns, int(np.round(num_inferences * num_inferences - num_inferences) / 2)))
-
-            inferred_is_this_hyp = all_pca_inferred_is[hyp*num_inferences*num_patterns:(hyp+1)*num_inferences*num_patterns,:]
-
-            # collect all for one pattern to draw
-            for pa in range(num_patterns):
-                inferred_is_this_pattern = inferred_is_this_hyp[pa:num_inferences*num_patterns:num_patterns]
-
-                # get pairwise distance
-                # returns an array with all pairwise distances
-                # of size: (num_inference * num_inference - num_inferences) / 2
-                pairwise_distances_inferred_is[pa,:] = scipy.spatial.distance.pdist(inferred_is_this_pattern)
-
-                # and get distance to the training initial state!
-                dist_to_training_pattern = np.sqrt(np.sum((inferred_is_this_pattern - np.tile(pca_trained_is[pa,:],(10,1)))**2,axis=1))
-
-            if curr_r == 0:
-                with open(os.path.join(result_dir, eval_setting + "_pairwise-dist-inferred-is_H-" + str(training_hyp) + ".txt"), "w") as f:
-                    f.write('htrain')
-                    for pa in range(num_patterns):
-                        f.write('\tpa' + str(pa))
-                    f.write('\n')
-
-                    for i in range(pairwise_distances_inferred_is.shape[1]):
-                        f.write(str(training_hyp))
-                        for pa in range(num_patterns):
-                            f.write('\t' + str(pairwise_distances_inferred_is[pa, i]))
-                        f.write('\n')
-
-                with open(os.path.join(result_dir, eval_setting + "_dist-to-training-is_H-" + str(training_hyp) + ".txt"), "w") as f:
-                    f.write('htrain\tdist\n')
-                    for i in range(len(dist_to_training_pattern)):
-                        f.write(str(training_hyp) + "\t" + str(dist_to_training_pattern[i]) + "\n")
-
-            else:
-                with open(os.path.join(result_dir, eval_setting + "_pairwise-dist-inferred-is_H-" + str(training_hyp) + ".txt"), "a") as f:
-                    for i in range(pairwise_distances_inferred_is.shape[1]):
-                        f.write(str(training_hyp))
-                        for pa in range(num_patterns):
-                            f.write('\t' + str(pairwise_distances_inferred_is[pa, i]))
-                        f.write('\n')
-                with open(os.path.join(result_dir, eval_setting + "_dist-to-training-is_H-" + str(training_hyp) + ".txt"), "a") as f:
-                    for i in range(len(dist_to_training_pattern)):
-                        f.write(str(training_hyp) + "\t" + str(dist_to_training_pattern[i]) + "\n")
-        """
-
         # PLOTTING
 
         colors = ['red', 'orange', 'green', 'blue', 'gray', 'black']
         pattern_category = ['FACE', 'HOUSE', 'CAR', 'FLOWER', 'HUMAN', 'ROCKET']
-
-        """
-        # plot the trained and inferred_is
-        # 3d
-        fig = plt.figure('Trained and inferred initial states (3d)', figsize=(30,30)) #figsize=(10, 11.0))
-        plt.rcParams.update({'font.size': 50, 'legend.fontsize': 30})
-        ax = fig.add_subplot(111, projection='3d')
-
-        for th in plotting_test_hyps:
-            for i in range(num_patterns):
-                for j in range(num_inferences):
-                    ax.scatter(pca_inferred_is[th,0][j][0][i,0], pca_inferred_is[th,0][j][0][i,1], pca_inferred_is[th,0][j][0][i,2], color=colors[i], marker='o',s=100)
-
-        for i in range(num_patterns):
-            ax.scatter(pca_trained_is[i,0], pca_trained_is[i,1], pca_trained_is[i,2], color=colors[i], marker='*',s=800, label=pattern_category[i])
-
-        plt.legend()
-        plt.savefig(os.path.join(result_dir, eval_setting + '_inferred-is-3d_run-' + dir_list[curr_r] + graphics_extension))
-        plt.close()
-        """
 
         # 2d
         fig = plt.figure('Trained and inferred initial states (2d)', figsize=(30,30)) #figsize=(10, 11.0))
@@ -367,35 +298,7 @@ for training_hyp in ['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
         plt.savefig(os.path.join(result_dir, eval_setting + '_inferred-is-2d_run-' + dir_list[curr_r] + graphics_extension))
         plt.close()
 
-        # TODO plot after 30 timesteps where the activations are (did they converge according to class?)
-
-
         # From 0 to 30
-        # 3d
-        """
-        fig = plt.figure('Neuron activations during first 30 timesteps (2d)', figsize=(30,30)) #figsize=(10, 11.0))
-        plt.rcParams.update({'font.size': 50, 'legend.fontsize': 30})
-        ax = fig.add_subplot(111, projection='3d')
-
-        for th in plotting_test_hyps:
-            for i in range(num_patterns):
-                for j in range(num_inferences):
-                    for t in range(30):
-                        if t==29:
-                            ax.scatter(pca_uh_history[th,0][j,i][t,0], pca_uh_history[th,0][j,i][t,1], pca_uh_history[th,0][j,i][t,2], color=colors[i], marker='s',s=1000)
-                        else:
-                            ax.scatter(pca_uh_history[th,0][j,i][t,0], pca_uh_history[th,0][j,i][t,1], pca_uh_history[th,0][j,i][t,2], color=colors[i], marker='o',s=200)
-
-        for ii in np.arange(10,360,45):
-            for jj in np.arange(10,360,45):
-                ax.view_init(elev=ii, azim=jj)
-                plt.savefig(os.path.join(result_dir, eval_setting + '_uh-3d_run-'+ dir_list[curr_r] + "_view-" + str(ii) + "-" + str(jj) + graphics_extension))
-
-        #plt.legend()
-        #plt.savefig(os.path.join(result_dir, eval_setting + '_uh-3d_run-' + dir_list[curr_r] + graphics_extension))
-        plt.close()
-        """
-
 
         # 2d
         fig = plt.figure('Neuron activations after 30 timesteps (2d)', figsize=(30,30)) #figsize=(10, 11.0))
@@ -420,29 +323,6 @@ for training_hyp in ['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
 
 
         # From 30 to end
-        # 3d
-
-        """
-        fig = plt.figure('Neuron activations during first 30 timesteps (2d)', figsize=(30,30)) #figsize=(10, 11.0))
-        plt.rcParams.update({'font.size': 50, 'legend.fontsize': 30})
-        ax = fig.add_subplot(111, projection='3d')
-
-        for th in plotting_test_hyps:
-            for i in range(num_patterns):
-                for j in range(num_inferences):
-                    for t in np.arange(30,90):
-                        ax.scatter(pca_uh_history[th,0][j,i][t,0], pca_uh_history[th,0][j,i][t,1], pca_uh_history[th,0][j,i][t,2], color=colors[i], marker='o',s=200)
-
-        for ii in np.arange(10,360,45):
-            for jj in np.arange(10,360,45):
-                ax.view_init(elev=ii, azim=jj)
-                plt.savefig(os.path.join(result_dir, eval_setting + '_uh-30-end_3d_run-'+ dir_list[curr_r] + "_view-" + str(ii) + "-" + str(jj) + graphics_extension))
-
-        #plt.legend()
-        #plt.savefig(os.path.join(result_dir, eval_setting + '_uh-3d_run-' + dir_list[curr_r] + graphics_extension))
-        plt.close()
-        """
-
 
         # 2d
         fig = plt.figure('Neuron activations after 30 timesteps (2d)', figsize=(30,30)) #figsize=(10, 11.0))
@@ -461,10 +341,6 @@ for training_hyp in ['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
         #plt.legend()
         plt.savefig(os.path.join(result_dir, eval_setting + '_uh-30-to-end_2d_run-' + dir_list[curr_r] + graphics_extension))
         plt.close()
-
-
-
-
 
         # Analysis
         from scipy.spatial.distance import pdist, squareform
@@ -498,9 +374,6 @@ for training_hyp in ['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
         dist_to_corresponding_training_is_all[curr_r] = dist_to_corresponding_training_is
 
         dist_between_training_is_all[curr_r] = np.mean(pdist(pca_trained_is))
-
-        # per time step, how close are the trajectories together?
-    #    all_uh_per_timestep_per_cluster = np.empty((num_timesteps, num_patterns),dtype=object)
 
         for t in range(num_timesteps):
 
@@ -620,9 +493,9 @@ for training_hyp in ['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
                 dist_to_reactive_var.append(current_matrix)
 
             # take the mean of measured distances for this timestep for each timestep
-            mean_dist_reactive_per_timestep[curr_r*num_inferences*num_patterns:curr_r*num_inferences*num_patterns+num_inferences*num_patterns,t] = np.concatenate(dist_to_reactive).reshape((60,))
+            mean_dist_reactive_per_timestep[curr_r*num_inferences*num_patterns:curr_r*num_inferences*num_patterns+num_inferences*num_patterns,t] = np.concatenate(dist_to_reactive).reshape((num_inferences*num_patterns,))
             # take the mean over variance of patterns to get the variance
-            var_dist_reactive_per_timestep[curr_r*num_inferences*num_patterns:curr_r*num_inferences*num_patterns+num_inferences*num_patterns,t] = np.concatenate(dist_to_reactive_var).reshape((60,))
+            var_dist_reactive_per_timestep[curr_r*num_inferences*num_patterns:curr_r*num_inferences*num_patterns+num_inferences*num_patterns,t] = np.concatenate(dist_to_reactive_var).reshape((num_inferences*num_patterns,))
 
 
 
@@ -722,21 +595,13 @@ for training_hyp in ['0.001', '0.01', '0.1', '1', '10', '100', '1000']:
                 f.write(str(mean_dist_training_is_epochs[net,t]) + "\t")
             f.write(str(np.mean(mean_dist_training_is_epochs[:,t])) + "\t" + str(np.sqrt(np.var(mean_dist_training_is_epochs[:,t]))) + "\n")
 
+# numbers of confusions / correct classifications
+num_sample_per_pattern = num_runs * num_inferences
+all_correct_class_percentage = np.asarray([np.sum(x) for x in correct_class])/(num_patterns*num_sample_per_pattern)*100
+all_confusion_percentage = 100 - all_correct_class_percentage
 
 
 
-    # PCA, and plot them
-
-    # measure the distance of the inferred initial states to the correct trained initial states
-
-    # => as the inference part probably is not related to the problem, we do not see a difference there
-
-
-    # then project all the 10 generations of one network via PCA
-
-    # with a weak prior, there should be more variation according to the input data
-
-    # with a strong prior, there should be less variation according to the input data
 
 
 

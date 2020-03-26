@@ -53,10 +53,11 @@ Evaluation of trained networks. Results are stored in the corresponding folder i
 
 run_evaluation.py
 Evaluation of the performance of the network for completing the trajectories.
+(By default, evaluation for hyp_train == hyp_test, stored to inference-corresponding.)
 
 run_evaluation_representation.py
 Evaluation of the internal representations of the networks for completing the trajectories.
-
+(Performed individually for each hyp parameter value, stored to inference-1 etc.)
 
 * Other source code files:
 
