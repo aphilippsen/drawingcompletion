@@ -64,7 +64,7 @@ num_neurons = 100
 explicit_sensor_variance = 0.01
 
 # Hypo prior that influences BI: this determines the different H settings
-hyp_prior_runs = [1, 0.001, 0.01, 0.1, 10, 100, 1000]
+hyp_prior_runs = [1000, 1, 0.001, 0.01, 0.1, 10, 100]
 
 # typically False, you can set it to True if you want to use initial weights which are already stored somewhere, then define the location init_weight_dir here as well
 reuse_existing_weights = False
@@ -259,7 +259,7 @@ for r in range(runs):
 
     # Evaluate the performance of the untrained network
     test_batch_size = num_classes
-    res, resv, resm = model.generate(model.initial_states.W.array, num_timesteps, variance_added_to_output = 0, external_signal_variance = ext_var_proactive)
+    res, resv, resm = model.generate(model.initial_states.W.array, num_timesteps, add_variance_to_output = 0, external_signal_variance = ext_var_proactive)
     results = cuda.to_cpu(res)
 
     for i in range(num_classes):
@@ -269,7 +269,7 @@ for r in range(runs):
            f.write("before learning: pattern generation error (proactive): " + str(history_generation_error_proactive[i]) + "\n")
     plot_results(results, num_timesteps, os.path.join(final_save_dir, "proactive_before-learning"), model.num_io, twoDim=True)
 
-    res, resv, resm, pe, wpe, respos = model.generate(model.initial_states.W.array, num_timesteps, external_input = xp.copy(xp.asarray(x_train[:test_batch_size,:])), variance_added_to_output = 0, external_signal_variance = explicit_sensor_variance)
+    res, resv, resm, pe, wpe, respos = model.generate(model.initial_states.W.array, num_timesteps, external_input = xp.copy(xp.asarray(x_train[:test_batch_size,:])), add_variance_to_output = 0, external_signal_variance = explicit_sensor_variance)
     results = cuda.to_cpu(res)
 
     for i in range(p.num_classes):
@@ -418,7 +418,7 @@ for r in range(runs):
         if epoch%save_interval == 1 or epoch == p.epochs:
 
            # evaluate proactive generation
-           res, resv, resm, u_h_history = model.generate(model.initial_states.W.array, num_timesteps, variance_added_to_output = 0, additional_output='activations', external_signal_variance = ext_var_proactive)
+           res, resv, resm, u_h_history = model.generate(model.initial_states.W.array, num_timesteps, add_variance_to_output = 0, additional_output='activations', external_signal_variance = ext_var_proactive)
            results = cuda.to_cpu(res)
 
            plot_results(results, num_timesteps, os.path.join(final_save_dir, "proactive_epoch-" + str(epoch).zfill(len(str(epochs)))), model.num_io, twoDim=True)
@@ -435,7 +435,7 @@ for r in range(runs):
            plot_pca_activations(u_h_history, num_timesteps, os.path.join(final_save_dir, "pca_context_act_proactive_epoch-" + str(epoch).zfill(len(str(epochs)))), p.num_c, p.num_classes)
 
            # evaluate reactive generation
-           res, resv, resm, pe, wpe, u_h_history, respos = model.generate(model.initial_states.W.array, num_timesteps, external_input = xp.copy(xp.asarray(x_train[:test_batch_size,:])), variance_added_to_output = 0, additional_output='activations', external_signal_variance = explicit_sensor_variance)
+           res, resv, resm, pe, wpe, u_h_history, respos = model.generate(model.initial_states.W.array, num_timesteps, external_input = xp.copy(xp.asarray(x_train[:test_batch_size,:])), add_variance_to_output = 0, additional_output='activations', external_signal_variance = explicit_sensor_variance)
            results = cuda.to_cpu(res)
 
            plot_results(results, num_timesteps, os.path.join(final_save_dir, "reactive_epoch-" + str(epoch).zfill(len(str(epochs)))), model.num_io, twoDim=True)

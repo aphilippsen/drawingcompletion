@@ -21,13 +21,9 @@ def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection
     if x_start is None:
         x_start = np.float32(np.tile(0, (1, model.num_io)))
 
-    # TODO not required
-    external_contrib_testing = np.zeros((time_steps,))
-    external_contrib_testing[:reduced_time_steps] = 1
-
     external_signal_var_testing = np.tile(model.external_signal_variance, (time_steps,))
     # after the initial time steps, external input becomes unavailable=unreliable!
-    external_signal_var_testing[reduced_time_steps:] = 1
+    external_signal_var_testing[reduced_time_steps:] = 50
 
 
     # use input only until ... time steps
@@ -53,15 +49,14 @@ def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection
 
     elif is_selection_mode == 'best':
         # init_state = np.reshape(model.initial_states.W.array[0,:], (1, model.num_c))
-        res, resv, resm, pe, wpe, respost = model.generate('best', time_steps, external_contrib = external_contrib_testing, external_input = input_traj_cut, epsilon_disturbance = 0, hyp_prior = 1, external_signal_variance = external_signal_var_testing, x_start = x_start, use_init_state_loss=False)
+        res, resv, resm, pe, wpe, respost = model.generate('best', time_steps, external_input = input_traj_cut, add_variance_to_output = 0, hyp_prior = 1, external_signal_variance = external_signal_var_testing, x_start = x_start)
 
         init_state = model.initial_states.W.array[model.used_is_idx,:] #xp.reshape(model.initial_states.W.array[model.used_is_idx,:], (len(model.used_is_idx), model.num_c))
 
     elif is_selection_mode == 'inference':
         if inference_network_path == '':
             # perform inference
-            inferred_is, is_history, res, resm, results_path = infer_initial_states_sctrnn(params, model, input_traj, epochs=inference_epochs, start_is='mean', plot = True, num_timesteps = reduced_time_steps, hyp_prior = hyp_prior, external_signal_variance = model.external_signal_variance, x_start = x_start)
-            # infer_initial_states_sctrnn(params, old_model, testing_data, num_timesteps = 0, epochs = 2000, start_is = 'mean', error_computation = 'standard', single_recognition = False, plot = True):
+            inferred_is, is_history, res, resm, results_path = infer_initial_states_sctrnn(params, model, input_traj, epochs=inference_epochs, start_is='mean', num_timesteps = reduced_time_steps, hyp_prior = hyp_prior, external_signal_variance = model.external_signal_variance, x_start = x_start)
             init_state = inferred_is.W.array
         else:
             # load network that has the inference results
@@ -75,32 +70,14 @@ def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection
 
     model.add_BI_variance = add_BI_variance
 
-    #  # use input only until ... time steps
-    # delete_from = reduced_time_steps+1
-    # input_traj_cut = chainer.cuda.to_gpu(np.copy(chainer.cuda.to_cpu(input_traj.reshape((-1,model.num_io)))))
-    # input_traj_cut[delete_from:-1,:] = 0
-    # input_traj_cut = input_traj_cut.reshape((input_traj.shape[0],-1))
-
     # generation with the inferred initial states, first 30 timesteps with input, after that without input
-    res, resv, resm, pe, wpe, u_h_history, respost = model.generate(init_state, time_steps, external_contrib = external_contrib_testing, external_input = input_traj_cut, epsilon_disturbance = 0, hyp_prior = hyp_prior, external_signal_variance = external_signal_var_testing, additional_output='activations', x_start = x_start)
+    xp.random.seed(seed=1)
+    res, resv, resm, pe, wpe, u_h_history, respost = model.generate(init_state, time_steps, external_input = input_traj_cut, add_variance_to_output = 0, hyp_prior = hyp_prior, external_signal_variance = external_signal_var_testing, additional_output='activations', x_start = x_start)
 
 
     if not plottingFile is None:
         for i in range(res.shape[0]):
             plot_multistroke(res[i,:].reshape((1,-1)), time_steps, plottingFile + "pattern-" + str(i) + ".png", model.num_io, given_part=reduced_time_steps)
-
-        # colors=['yellow', 'black']
-        # traj=res.reshape((-1,3))
-        # traj[:,2] = np.round(traj[:,2])
-        # plt.figure()
-        # for j in range(traj.shape[0]):
-        #     c = colors[int(traj[j,2])]
-        #     if external_contrib_testing[j] == 1:
-        #         c = 'red'
-        #     plt.plot(traj[j,0], traj[j,1], color=c, marker='*')
-        # # plt.show()
-        # plt.savefig(os.path.join(results_path, plottingFile))
-        # plt.close()
 
 
     return init_state, res, results_path, u_h_history

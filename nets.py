@@ -235,7 +235,7 @@ class SCTRNN(chainer.Chain):
                 input_var = chainer.Variable(xp.tile(xp.asarray(xp.float32([self.external_signal_variance])), (x.shape[0],x.shape[1])))
 
             # Bayesian inference
-            
+
             # standard deviation of BI signal
             sigma_BI = xp.sqrt(xp.divide(xp.multiply(input_var.array, pred_var.array), (input_var.array + pred_var.array)))
             # mean of BI signal
@@ -279,7 +279,7 @@ class SCTRNN(chainer.Chain):
 
         return u_h, y, v
 
-    def generate(self, init_states, num_steps, external_input = None, variance_added_to_output = None, additional_output='none', external_signal_variance = -1, add_BI_variance = True, hyp_prior = None, x_start = None):
+    def generate(self, init_states, num_steps, external_input = None, add_variance_to_output = None, additional_output='none', external_signal_variance = -1, add_BI_variance = True, hyp_prior = None, x_start = None):
         """
         Use the trained model and the given ``init_states`` to generate a sequence of length ``num_steps`` via closed- or open-loop control.
 
@@ -289,7 +289,7 @@ class SCTRNN(chainer.Chain):
             external_input: A numpy array of external input signals for each initial state. if ``None``, external_contrib = 0 is set.
                 One input signal per initial state should be provided. If there are more input signals than initial states, it
                 should be a multiple of the initial states, then the initial states array gets copied to match the length of ``external_input``.
-            variance_added_to_output: Float value, indicating the amount of noise (as standard deviation of a Gaussian distribution) added to the
+            add_variance_to_output: Float value, indicating the amount of noise (as standard deviation of a Gaussian distribution) added to the
                 network estimated average in each time step. If None, the variance estimated by the network itself is added to the
                 trajectory, so to generate the network average without disturbance, it has to be set to 0 explicitly.
             additional_output: if 'none', no effect, if 'activations', the history of the context layer activations is additionally returned.
@@ -344,9 +344,9 @@ class SCTRNN(chainer.Chain):
                         curr_extinp = xp.reshape(external_input[traj_idx,:], (1,external_input.shape[1]))
 
                         if self.gpu_id >= 0:
-                            res[is_idx], resv[is_idx], resm[is_idx], pe[is_idx], wpe[is_idx], res_posterior[is_idx] = self.generate(cuda.to_gpu([inis]), num_steps, curr_extinp, variance_added_to_output, plotting, additional_output='none')
+                            res[is_idx], resv[is_idx], resm[is_idx], pe[is_idx], wpe[is_idx], res_posterior[is_idx] = self.generate(cuda.to_gpu([inis]), num_steps, curr_extinp, add_variance_to_output, additional_output='none')
                         else:
-                            res[is_idx], resv[is_idx], resm[is_idx], pe[is_idx], wpe[is_idx], res_posterior[is_idx] = self.generate([inis], num_steps, curr_extinp, variance_added_to_output, plotting, additional_output='none')
+                            res[is_idx], resv[is_idx], resm[is_idx], pe[is_idx], wpe[is_idx], res_posterior[is_idx] = self.generate([inis], num_steps, curr_extinp, add_variance_to_output, additional_output='none')
                         is_idx += 1
 
                     self.used_is_idx[traj_idx] = np.asarray([x[0].mean() for x in pe]).argmin()
@@ -409,10 +409,10 @@ class SCTRNN(chainer.Chain):
             current_posterior = self.current_x
             
             # optionally, add variance to output
-            if variance_added_to_output is None:
+            if add_variance_to_output is None:
                 y_out = y.array + xp.sqrt(v.array) * xp.random.randn()
             else:
-                y_out = y.array + xp.sqrt(variance_added_to_output) * xp.random.randn()
+                y_out = y.array + xp.sqrt(add_variance_to_output) * xp.random.randn()
 
             results[i,0:self.num_io] = xp.reshape(y_out, (self.num_io,))
             resultsv[i,0:self.num_io] = xp.reshape(v.array, (self.num_io,))
@@ -439,7 +439,6 @@ class SCTRNN(chainer.Chain):
                     # new_x = xp.reshape(external_input[i,self.num_io*t:self.num_io*(t+1)], (1,self.num_io))
                     new_x = external_input[i,self.num_io*t:self.num_io*(t+1)].reshape((1,self.num_io))
 
-
                 # generate forward step
                 u_h, y, v = self(new_x, u_h)
 
@@ -447,10 +446,10 @@ class SCTRNN(chainer.Chain):
                 current_posterior = self.current_x
 
                 # optionally, add variance to output
-                if variance_added_to_output is None:
+                if add_variance_to_output is None:
                     y_out = y.array + xp.sqrt(v.array) * xp.random.randn()
                 else:
-                    y_out = y.array + xp.sqrt(variance_added_to_output) * xp.random.randn()
+                    y_out = y.array + xp.sqrt(add_variance_to_output) * xp.random.randn()
 
                 results[i,self.num_io*t:self.num_io*(t+1)] = xp.reshape(y_out, (self.num_io,))
                 resultsv[i,self.num_io*t:self.num_io*(t+1)] = xp.reshape(v.array, (self.num_io,))

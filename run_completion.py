@@ -25,42 +25,28 @@ else:
 
 # if defined, this is the name of a subfolder of results/training where the trained networks to be used here are located
 #data_set_name = "example"
-data_set_name = "final_0.01-100"#"tmpComp1-training-set"#"training-2020-02-new-completion"#"training-2020-03_noise0.01"#test-set"
+data_set_name = "final_0.01-100_6x7"#"tmpComp1-training-set"#"training-2020-02-new-completion"#"training-2020-03_noise0.01"#test-set"
 #data_set_name = "2019-11-all-test-set"
 
 # which training parameter conditions to check
-condition_directories = ['1'] #, '1', '10', '100']
+condition_directories = ['1000'] #, '1', '10', '100']
 # which hyp_prior condition to use for testing:
-test_hyp_priors = [1]
+test_hyp_priors = [1000]
 
 # trajectory data
-training_data_file = "data_generation/drawing-data-sets/drawings-191105-6-drawings.npy"
-training_data_file_classes = "data_generation/drawing-data-sets/drawings-191105-6-drawings-classes.npy"
+training_data_file = "data_generation/drawing-data-sets/drawings-191105-6x3-test.npy"#-drawings.npy"
+training_data_file_classes = "data_generation/drawing-data-sets/drawings-191105-6x3-test-classes.npy"#drawings-classes.npy"
 #training_data_file = "data_generation/drawing-data-sets/drawings-191105-6-drawings-test-set.npy"
 #training_data_file_classes = "data_generation/drawing-data-sets/drawings-191105-6-drawings-test-set-classes.npy"
 num_timesteps = 90
-reduced_time_steps = 30
 num_classes = 6
 num_io = 3
-
-# number of drawings available per class (completion is tried once for every available drawing)
-drawings_per_class = 5
-
-x_train = np.float32(np.load(training_data_file))
-x_start = np.reshape(np.mean(x_train[:,0:num_io],axis=0), (1,-1))
-if gpu_id >= 0:
-    x_train = cuda.to_gpu(x_train)
-    x_start = cuda.to_gpu(x_start)
-
-info = ""
-
-var_integration = 2
 
 # Which initial state to use for generation
 # is_selection_mode = 'zero' # take zero vector
 # is_selection_mode = 'mean' # take the mean of all training initial states
 # is_selection_mode = 'best' # try all available initial states and use the one that best replicates the existing part
-is_selection_mode = 'inference' # use backpropagation inference to infer the best fitting initial states
+is_selection_mode = 'mean' # use backpropagation inference to infer the best fitting initial states
 
 # For how many epochs to perform inference
 inference_epochs=2000
@@ -69,10 +55,21 @@ reduced_time_steps_list = [30]
 
 add_BI_variance = True
 
-info += is_selection_mode
+# number of drawings available per class (completion is tried once for every available drawing)
+drawings_per_class = 3
+
+x_train = np.float32(np.load(training_data_file))
+# the mean of all trajectory starting points
+x_start = np.reshape(np.mean(x_train[:,0:num_io],axis=0), (1,-1))
+if gpu_id >= 0:
+    x_train = cuda.to_gpu(x_train)
+    x_start = cuda.to_gpu(x_start)
+
 
 # where to find the training networks
 head_directory = "./results"
+info = ""
+info += is_selection_mode # for creating a subfolder
 
 training_dir = os.path.join(head_directory, "training/"+data_set_name)
 completion_dir = os.path.join(head_directory, "completion/"+data_set_name)
@@ -107,7 +104,7 @@ for current_r in range(len(run_directories)):
             final_vis_best_class = np.empty((num_classes, len(reduced_time_steps_list)), dtype=object)
             final_new_best_class = np.empty((num_classes, len(reduced_time_steps_list)), dtype=object)
             final_uh_history = np.empty((num_classes, len(reduced_time_steps_list)), dtype=object)
-            final_inferred_is = np.empty((num_classes, len(reduced_time_steps_list)), dtype=object)
+            final_inferred_is = np.empty((len(reduced_time_steps_list),), dtype=object)
 
             for i in range(final_res.shape[0]):
                 for j in range(final_res.shape[1]):
@@ -122,7 +119,7 @@ for current_r in range(len(run_directories)):
                     final_vis_best_class[i,j] = []
                     final_new_best_class[i,j] = []
                     final_uh_history[i,j] = []
-                    final_inferred_is[i,j] = []
+                    final_inferred_is[j] = []
 
             # for all input trajectory patterns
 
@@ -147,10 +144,10 @@ for current_r in range(len(run_directories)):
 
                     init_state, res, results_path, u_h_history = complete_drawing(model, params, input_traj, reduced_time_steps, is_selection_mode = is_selection_mode, hyp_prior = hyp_prior, x_start = x_start, plottingFile = plottingFile, add_BI_variance = add_BI_variance, inference_epochs=inference_epochs, gpu_id = gpu_id)
 
+                    final_inferred_is[reduced_time_steps_list.index(reduced_time_steps)].append(cuda.to_cpu(init_state))
                     for curr_class in range(num_classes):
                         final_res[curr_class, reduced_time_steps_list.index(reduced_time_steps)].append(cuda.to_cpu(res[curr_class,:]))
                         final_uh_history[curr_class, reduced_time_steps_list.index(reduced_time_steps)].append(cuda.to_cpu(u_h_history[curr_class,:]))
-                        final_inferred_is[curr_class, reduced_time_steps_list.index(reduced_time_steps)].append(cuda.to_cpu(init_state))
 
                         # for later evaluation, store parameters
                         if is_selection_mode == 'inference':
