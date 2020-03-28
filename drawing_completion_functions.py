@@ -42,7 +42,7 @@ def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection
         init_state = is_selection_mode
 
     elif is_selection_mode == 'mean':
-        init_state = np.reshape(np.mean(model.initial_states.W.array,axis=0), (1, model.num_c))
+        init_state = np.mean(model.initial_states.W.array,axis=0).reshape((1, model.num_c))
 
     elif is_selection_mode == 'zero':
         init_state = np.float32(np.zeros((1, model.num_c)))
