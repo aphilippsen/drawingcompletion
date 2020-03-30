@@ -29,9 +29,9 @@ data_set_name = "final_0.01-100_6x7"#"tmpComp1-training-set"#"training-2020-02-n
 #data_set_name = "2019-11-all-test-set"
 
 # which training parameter conditions to check
-condition_directories = ['1000'] #, '1', '10', '100']
+condition_directories = ['10'] #, '1', '10', '100']
 # which hyp_prior condition to use for testing:
-test_hyp_priors = [1000]
+test_hyp_priors = [10]
 
 # trajectory data
 training_data_file = "data_generation/drawing-data-sets/drawings-191105-6x3-test.npy"#-drawings.npy"
@@ -46,7 +46,7 @@ num_io = 3
 # is_selection_mode = 'zero' # take zero vector
 # is_selection_mode = 'mean' # take the mean of all training initial states
 # is_selection_mode = 'best' # try all available initial states and use the one that best replicates the existing part
-is_selection_mode = 'mean' # use backpropagation inference to infer the best fitting initial states
+is_selection_mode = 'inference' # use backpropagation inference to infer the best fitting initial states
 
 # For how many epochs to perform inference
 inference_epochs=2000

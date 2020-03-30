@@ -4,14 +4,14 @@ import matplotlib.pyplot as plt
 import pathlib
 
 #data_set_name = 'example'
-data_set_name = "tmpComp1000"#-training-set" #"training-2020-02-new-completion" # "tmp"#"training-2020-03_noise0.01"#test-set"
+data_set_name = "final_0.01-100_6x7"#"tmpComp1000"#-training-set" #"training-2020-02-new-completion" # "tmp"#"training-2020-03_noise0.01"#test-set"
 #data_set_name = "2019-11-all-test-set"
 
 # Evaluation of the inference results
 # when train and test hyp-prior vary!
 
 # data for plotting the correct trajectories
-training_data_file = "data_generation/drawing-data-sets/drawings-191105-6-drawings.npy"
+training_data_file = "data_generation/drawing-data-sets/drawings-191105-6x3-test.npy"#data_generation/drawing-data-sets/drawings-191105-6-drawings.npy"
 x_train = np.float32(np.load(training_data_file))
 
 eval_head_dir = './results/completion/' + data_set_name
@@ -20,11 +20,17 @@ mode = 'inference'
 
 # which testing H to check
 #test_hyp_all = ['0.001', '0.01', '0.1', '1', '10', '100', '1000'] 
-test_hyp_all = ['0.001', '0.001', '1', '1', '1000', '1000', '1000']
+test_hyp_all = ['0.001', '0.01', '0.1', '1', '1', '1', '1']
 
-num_runs = 2 # how often the experiment was independently conducted
-num_inferences = 5 # how many test inferences have been performed in each run
+num_runs = 5 # how often the experiment was independently conducted
+num_inferences = 3 # how many test inferences have been performed in each run
 num_patterns = 6 # number of different training sample patterns
+
+dir_list = next(os.walk(eval_head_dir))[1]
+
+# sanity check
+assert(num_inferences*num_patterns == x_train.shape[0])
+assert(len(dir_list) == num_runs)
 
 # Which training H to use. If 'corresponding, use the same training = test H
 training_hyp = 'corresponding'
@@ -56,7 +62,6 @@ for test_hyp in test_hyp_all:
 
     results[test_hyp_idx,0] = np.empty((num_runs*num_inferences, num_patterns), dtype=object)
 
-    dir_list = next(os.walk(eval_head_dir))[1]
     run_idx = 0-num_inferences
     for curr_r in range(len(dir_list)):
         run_idx += num_inferences
