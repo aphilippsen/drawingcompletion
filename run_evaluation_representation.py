@@ -14,20 +14,20 @@ from nets import load_network
 
 # Plotting the internal representations of the trained networks
 
-num_inferences = 5 # how many inferences have been performed in each run to test the network
+num_inferences = 3 # how many inferences have been performed in each run to test the network
 num_patterns = 6 # number of different training sample patterns
 
-training_data_file = "data_generation/drawing-data-sets/drawings-191105-6-drawings.npy"
+training_data_file = "data_generation/drawing-data-sets/drawings-191105-6x3-test.npy"
 #data_set_name = 'example'
-data_set_name = "tmp" #"training-2020-02-test-set"
+data_set_name = "final_0.01-100_6x7" #"training-2020-02-test-set"
 #data_set_name = "2019-11-all-test-set"
 mode = 'inference'
 inf_epochs = np.concatenate((np.arange(1,2001,100), [2000]))
 
-training_hyp_all = ['0.001', '0.001','0.001', '1', '1', '1', '1'] # ['0.001', '0.01', '0.1', '1', '10', '100', '1000']
+training_hyp_all = ['0.001', '0.01', '0.1', '1', '10', '100', '1000']
 
 num_timesteps = 90
-num_neurons = 250
+num_neurons = 100
 graphics_extension = ".png"
 
 # this code is only for one reduced_time_steps at a time! (reduced=0 is the array index that should be used)
@@ -94,7 +94,7 @@ for training_hyp in training_hyp_all:
 
         # get the uh_history during reactive generation of the trained network
         x_train = np.float32(np.load(training_data_file))
-        res, resv, resm, pe, wpe, uh_history_reactive, respos = train_model.generate(train_model.initial_states.W.array, num_timesteps, external_input = x_train[:6,:], epsilon_disturbance = 0, additional_output='activations', external_signal_variance = train_model.external_signal_variance)
+        res, resv, resm, pe, wpe, uh_history_reactive, respos = train_model.generate(train_model.initial_states.W.array, num_timesteps, external_input = x_train[:6,:], add_variance_to_output = 0, additional_output='activations', external_signal_variance = train_model.external_signal_variance)
 
 
         # get the results from the inferences
@@ -124,7 +124,7 @@ for training_hyp in training_hyp_all:
             for i in range(uh.shape[0]): # for all pattern classes
                 for j in range(len(uh[i,0])): # for all inferences for this pattern
                     uh_history[test_hyp_idx,0][j,i] = uh[i,0][j].reshape((num_timesteps, num_neurons))
-                    inferred_is[test_hyp_idx,0][j,0] = final_is[0,0][j]
+                    inferred_is[test_hyp_idx,0][j,0] = final_is[0][j]
 
                     # evaluate whether inferred IS is correct or not
                     recogn_is = np.argmin(np.sqrt(np.sum((trained_is - np.tile(inferred_is[test_hyp_idx,0][j,0][i,:],(num_patterns,1)))**2,axis=1)))

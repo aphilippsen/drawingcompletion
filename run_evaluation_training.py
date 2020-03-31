@@ -103,7 +103,7 @@ for train_hyp in train_hyp_all:
         params, model = load_network(current_net, model_filename="network-final")
 
         # proactive
-        res, resv, resm, u_h_history = model.generate(model.initial_states.W.array, 90, epsilon_disturbance = 0, additional_output='activations', external_signal_variance = model.external_signal_variance)
+        res, resv, resm, u_h_history = model.generate(model.initial_states.W.array, 90, add_variance_to_output = 0, additional_output='activations', external_signal_variance = model.external_signal_variance)
 
         for i in range(res.shape[0]):
             ax = fig.add_subplot(10,6,curr_r*6+(i+1))

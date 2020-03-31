@@ -19,8 +19,8 @@ mode = 'inference'
 # mode = 'best'
 
 # which testing H to check
-#test_hyp_all = ['0.001', '0.01', '0.1', '1', '10', '100', '1000'] 
-test_hyp_all = ['0.001', '0.01', '0.1', '1', '1', '1', '1']
+test_hyp_all = ['0.001', '0.01', '0.1', '1', '10', '100', '1000'] 
+#test_hyp_all = ['0.001', '0.01', '0.1', '1', '1', '1', '1']
 
 num_runs = 5 # how often the experiment was independently conducted
 num_inferences = 3 # how many test inferences have been performed in each run
@@ -180,6 +180,7 @@ x = [[0.05, 2.05, 4.05, 6.05, 8.05, 10.05, 12.05], [0.3, 2.3, 4.3, 6.3, 8.3, 10.
 colors = ['red', 'orange', 'green', 'blue', 'gray', 'black']
 pattern_category = ['FACE', 'HOUSE', 'CAR', 'FLOWER', 'HUMAN', 'ROCKET']
 
+max_lim = 0.4
 # which labels to put to these positions
 my_xticks = []
 for num_t in range(num_test_hyp):
@@ -194,7 +195,7 @@ ax = fig.add_subplot(111)
 ax.set_xlabel('prior parameter condition')
 ax.set_ylabel('Drawing error (DTW distance)')
 
-for line_offset in np.arange(-0.005, 0.2, 0.01):
+for line_offset in np.arange(-0.005, max_lim, 0.05):
     plt.plot([-1, 16], orientation_y_line+line_offset, 'lightgray', zorder=0, linewidth=5)
 
 for pat in range(num_patterns):
@@ -222,7 +223,7 @@ for pat in range(num_patterns):
 
 plt.xticks(x[2], my_xticks)
 ax.set_xlim([-0.2, 15.8])
-ax.set_ylim([-0.002, 0.2])
+ax.set_ylim([-0.002, max_lim])
 fig.legend(loc=(0.855, 0.47))
 fig.tight_layout()
 plt.savefig(os.path.join(plot_dir, 'completion_new-part_best.' + output_format))
@@ -234,7 +235,7 @@ ax = fig.add_subplot(111)
 ax.set_xlabel('prior parameter condition')
 ax.set_ylabel('Drawing error (DTW distance)')
 
-for line_offset in np.arange(-0.005, 0.2, 0.01):
+for line_offset in np.arange(-0.005, max_lim, 0.05):
     plt.plot([-1, 16], orientation_y_line+line_offset, 'lightgray', zorder=0, linewidth=5)
 
 for pat in range(num_patterns):
@@ -256,7 +257,7 @@ for pat in range(num_patterns):
     # ax.errorbar(x[pat], corr_new_means[:,pat], yerr=corr_new_std[:,pat], color=colors[pat], ecolor=colors[pat], fmt='o', markersize=20, capsize=10, capthick=5, elinewidth=5, barsabove=True, label=pattern_category[pat])
 plt.xticks(x[2], my_xticks)
 ax.set_xlim([-0.2, 15.8])
-ax.set_ylim([-0.002, 0.2])
+ax.set_ylim([-0.002, max_lim])
 fig.legend(loc=(0.855, 0.47))
 fig.tight_layout()
 plt.savefig(os.path.join(plot_dir,'completion_new-part_correct.' + output_format))
@@ -268,7 +269,7 @@ ax = fig.add_subplot(111)
 ax.set_xlabel('prior parameter condition')
 ax.set_ylabel('Drawing error (DTW distance)')
 
-for line_offset in np.arange(-0.005, 0.2, 0.01):
+for line_offset in np.arange(-0.005, max_lim, 0.05):
     plt.plot([-1, 16], orientation_y_line+line_offset, 'lightgray', zorder=0, linewidth=5)
 
 for pat in range(num_patterns):
@@ -289,7 +290,7 @@ for pat in range(num_patterns):
     # ax.errorbar(x[pat], best_vis_means[:,pat], yerr=best_vis_std[:,pat], color=colors[pat], ecolor=colors[pat], fmt='o', markersize=20, capsize=15, capthick=5, elinewidth=5, barsabove=True, label=pattern_category[pat])
 plt.xticks(x[2], my_xticks)
 ax.set_xlim([-0.2, 15.8])
-ax.set_ylim([-0.002, 0.2])
+ax.set_ylim([-0.002, max_lim])
 fig.legend(loc=(0.855, 0.47))
 fig.tight_layout()
 plt.savefig(os.path.join(plot_dir,'completion_visible-part_best.' + output_format))
@@ -301,7 +302,7 @@ ax = fig.add_subplot(111)
 ax.set_xlabel('prior parameter condition')
 ax.set_ylabel('Drawing error (DTW distance)')
 
-for line_offset in np.arange(-0.005, 0.2, 0.01):
+for line_offset in np.arange(-0.005, max_lim, 0.05):
     plt.plot([-1, 16], orientation_y_line+line_offset, 'lightgray', zorder=0, linewidth=5)
 
 for pat in range(num_patterns):
@@ -322,7 +323,7 @@ for pat in range(num_patterns):
     # ax.errorbar(x[pat], corr_vis_means[:,pat], yerr=corr_vis_std[:,pat], color=colors[pat], ecolor=colors[pat], fmt='o', markersize=20, capsize=10, capthick=5, elinewidth=5, barsabove=True, label=pattern_category[pat])
 plt.xticks(x[2], my_xticks)
 ax.set_xlim([-0.2, 15.8])
-ax.set_ylim([-0.002, 0.2])
+ax.set_ylim([-0.002, max_lim])
 fig.legend(loc=(0.855, 0.47))
 fig.tight_layout()
 plt.savefig(os.path.join(plot_dir, 'completion_visible-part_correct.' + output_format))
