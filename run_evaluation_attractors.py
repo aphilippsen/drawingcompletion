@@ -10,14 +10,18 @@ from utils.distance_measures import distance_measure
 reduced_time_steps = 30
 add_BI_variance = True
 num_classes = 6
-num_runs = 5
+num_runs = 2
+
+# indices of which pattern should be interpolated with which other pattern
+indices_pattern1 = [0]
+indices_pattern2 = np.arange(6) #[1]
 
 # which training parameter conditions to check
 condition_directories = ['0.001', '1', '1000']
 # which hyp_prior condition to use for testing:
 test_hyp_priors =  [0.001, 1, 1000]
 
-data_set_name = 'training-2020-02-test-set'
+data_set_name = 'final_0.01-100_6x7' #'training-2020-02-test-set'
 
 # where to find the training networks
 head_directory = "./results"
@@ -51,7 +55,6 @@ run_directories = next(os.walk(training_dir))[1]
 for current_c in range(len(condition_directories)):
 
     try:
-        x = 5/0
         attractor_distance_vis_error_results_1 = np.load(os.path.join(eval_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_attractor-dist-visible-1.npy'))
         attractor_distance_new_error_results_1 = np.load(os.path.join(eval_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_attractor-dist-new-1.npy'))
         attractor_distance_vis_error_results_2 = np.load(os.path.join(eval_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_attractor-dist-visible-2.npy'))
@@ -89,8 +92,8 @@ for current_c in range(len(condition_directories)):
                 attractor_distance_new_error_results_2[current_r][interps.tolist().index(j)] = []
 
                 # for two fixed patters
-                for i_1 in [0]:#np.arange(6):
-                    for i_2 in [1]: #np.arange(6):
+                for i_1 in indices_pattern1:
+                    for i_2 in indices_pattern2:
                         print(str(i_1) + ", " + str(i_2))
                 # for every pair of two IS
 #                for i_1 in range(train_is.shape[0]):
@@ -117,12 +120,12 @@ for current_c in range(len(condition_directories)):
                         init_state, res, results_path, u_h_history = complete_drawing(model, params, input_traj, reduced_time_steps, is_selection_mode = np.tile(interpol_is,(num_classes,1)), hyp_prior = test_hyp_priors[current_c], x_start = None, plottingFile = plottingFile, add_BI_variance = add_BI_variance, gpu_id=-1)
 
                         # calculate error of the generated shape to the intended shape
-                        # visible part (to pattern 1)
+                        # visible part (error to pattern 1)
                         cl = i_1
                         generated_trajectory = res[cl,:].reshape((-1,model.num_io))
                         correct_trajectory = input_traj[cl,:].reshape((-1,model.num_io))
                         attractor_distance_vis_error_results_1[current_r][interps.tolist().index(j)].append(distance_measure(correct_trajectory[1:reduced_time_steps,:], generated_trajectory[0:reduced_time_steps-1,:], method = 'dtw'))
-                        # invisible part (to pattern 1)
+                        # invisible part (error to pattern 1)
                         generated_trajectory = res[cl,:].reshape((-1,model.num_io))
                         correct_trajectory = input_traj[cl,:].reshape((-1,model.num_io))
                         attractor_distance_new_error_results_1[current_r][interps.tolist().index(j)].append(distance_measure(correct_trajectory[reduced_time_steps:,:], generated_trajectory[reduced_time_steps:,:], method = 'dtw'))
@@ -137,12 +140,12 @@ for current_c in range(len(condition_directories)):
 
                         init_state, res, results_path, u_h_history = complete_drawing(model, params, input_traj, reduced_time_steps, is_selection_mode = np.tile(interpol_is,(num_classes,1)), hyp_prior = test_hyp_priors[current_c], x_start = None, plottingFile = plottingFile, add_BI_variance = add_BI_variance, gpu_id=-1)
 
-                        # visible part (to pattern 2)
+                        # visible part (error to pattern 2)
                         cl = i_2 #range(num_classes):
                         generated_trajectory = res[cl,:].reshape((-1,model.num_io))
                         correct_trajectory = input_traj[cl,:].reshape((-1,model.num_io))
                         attractor_distance_vis_error_results_2[current_r][interps.tolist().index(j)].append(distance_measure(correct_trajectory[1:reduced_time_steps,:], generated_trajectory[0:reduced_time_steps-1,:], method = 'dtw'))
-                        # invisible part (to pattern 2)
+                        # new part (error to pattern 2)
                         generated_trajectory = res[cl,:].reshape((-1,model.num_io))
                         correct_trajectory = input_traj[cl,:].reshape((-1,model.num_io))
                         attractor_distance_new_error_results_2[current_r][interps.tolist().index(j)].append(distance_measure(correct_trajectory[reduced_time_steps:,:], generated_trajectory[reduced_time_steps:,:], method = 'dtw'))
@@ -174,7 +177,7 @@ for current_c in condition_directories:
     # all "other" patterns compared to pattern 0, plotting patterns individually
 
     collect_over_patterns_1 = np.zeros((num_classes-1, len(interps), num_runs))
-    for r in range(5):
+    for r in range(num_runs):
         all_error_trajs = np.concatenate(attractor_distance_new_error_results_1[r]).reshape((len(interps),-1))[:,0:num_classes-1]
         for pat in range(num_classes-1):
             collect_over_patterns_1[pat][:,r] = all_error_trajs[:,pat]
@@ -189,7 +192,7 @@ for current_c in condition_directories:
             ax3.errorbar(interps, meanpat, stdpat, color=colors[0])#, label=str(current_c) + " (1)")
 
     collect_over_patterns_2 = np.zeros((num_classes-1, len(interps), num_runs))
-    for r in range(5):
+    for r in range(num_runs):
         all_error_trajs = np.concatenate(attractor_distance_new_error_results_2[r]).reshape((len(interps),-1))[:,0:num_classes-1]
         for pat in range(num_classes-1):
             collect_over_patterns_2[pat][:,r] = all_error_trajs[:,pat]
@@ -289,7 +292,7 @@ ax2.set_ylabel("Normal prior (1)")
 ax3.set_ylabel("Hypo-prior (1000)")
 ax1.set_ylim([0, 0.2])
 ax2.set_ylim([0, 0.2])
-ax3.set_ylim([0, 0.2])
+ax3.set_ylim([0, 0.4])
 plt.savefig('bla.pdf')#(os.path.join(eval_dir, '../bla.png'))
 plt.close()
 
