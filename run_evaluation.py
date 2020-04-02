@@ -119,6 +119,22 @@ for num_t in range(num_test_hyp):
     corr_new_means[num_t,:] = np.mean(corr_new[num_t,0],axis=0)
     corr_new_std[num_t,:] = np.std(corr_new[num_t,0],axis=0)
 
+# write info to a csv for statistics analysis
+import pandas as pd
+error_data_summary = []
+test_hyp_idx = -1
+for test_hyp in test_hyp_all:
+    test_hyp_idx += 1
+
+    for r in range(num_runs):
+        for inf in range(num_inferences):
+            for pat in range(num_patterns):
+                error_data_summary.append([test_hyp, r, inf, pat, best_new[test_hyp_idx][0][r*num_inferences+inf, pat], best_vis[test_hyp_idx][0][r*num_inferences+inf, pat]])
+                
+    
+df_error_data = pd.DataFrame(data=error_data_summary, columns = ['H', 'netId', 'infId', 'pattern', 'errNewBest', 'errVisBest'])
+df_error_data.to_csv(os.path.join(plot_dir, "error_data_summary.csv"))
+
 
 # confusions
 
