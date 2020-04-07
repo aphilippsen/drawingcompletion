@@ -22,7 +22,7 @@ mode = 'inference'
 test_hyp_all = ['0.001', '0.01', '0.1', '1', '10', '100', '1000'] 
 #test_hyp_all = ['0.001', '0.01', '0.1', '1', '1', '1', '1']
 
-num_runs = 5 # how often the experiment was independently conducted
+num_runs = 10 # how often the experiment was independently conducted
 num_inferences = 3 # how many test inferences have been performed in each run
 num_patterns = 6 # number of different training sample patterns
 

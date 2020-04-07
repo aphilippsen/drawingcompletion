@@ -29,9 +29,9 @@ data_set_name = "final_0.01-100_6x7"#"tmpComp1-training-set"#"training-2020-02-n
 #data_set_name = "2019-11-all-test-set"
 
 # which training parameter conditions to check
-condition_directories = ['10'] #, '1', '10', '100']
+condition_directories = ['100'] #, '1', '10', '100']
 # which hyp_prior condition to use for testing:
-test_hyp_priors = [10]
+test_hyp_priors = [100]
 
 # trajectory data
 training_data_file = "data_generation/drawing-data-sets/drawings-191105-6x3-test.npy"#-drawings.npy"

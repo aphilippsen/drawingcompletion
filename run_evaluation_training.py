@@ -8,7 +8,7 @@ train_hyp_all = ['0.001', '0.01', '0.1', '1', '10', '100', '1000']
 # maximum epoch used in training
 max_epoch = 30000
 #data_set_name = 'example'
-data_set_name = "tmp"#"training-2020-03_noise0.01"
+data_set_name = "final_0.01-100_6x7"#"training-2020-03_noise0.01"
 eval_head_dir = './results/training/' + data_set_name
 
 error_training_proactive = np.empty((len(train_hyp_all),), dtype=object)

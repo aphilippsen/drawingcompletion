@@ -1,4 +1,5 @@
 import os
+import pathlib
 import numpy as np
 import matplotlib.pyplot as plt
 from chainer import cuda
@@ -10,16 +11,16 @@ from utils.distance_measures import distance_measure
 reduced_time_steps = 30
 add_BI_variance = True
 num_classes = 6
-num_runs = 2
+num_runs = 10
 
 # indices of which pattern should be interpolated with which other pattern
-indices_pattern1 = [0]
+indices_pattern1 = [2]
 indices_pattern2 = np.arange(6) #[1]
 
 # which training parameter conditions to check
-condition_directories = ['0.001', '1', '1000']
+condition_directories = ['0.001', '1', '10']
 # which hyp_prior condition to use for testing:
-test_hyp_priors =  [0.001, 1, 1000]
+test_hyp_priors =  [0.001, 1, 10]
 
 data_set_name = 'final_0.01-100_6x7' #'training-2020-02-test-set'
 
@@ -28,6 +29,9 @@ head_directory = "./results"
 
 training_dir = os.path.join(head_directory, "training/"+data_set_name)
 eval_dir = os.path.join(head_directory, "evaluation/"+data_set_name)
+
+plot_dir = os.path.join(eval_dir, "attractors-dtw-car")
+pathlib.Path(plot_dir).mkdir(parents=True, exist_ok=True)
 
 interps = np.arange(10,-1, -1)/10
 
@@ -55,10 +59,10 @@ run_directories = next(os.walk(training_dir))[1]
 for current_c in range(len(condition_directories)):
 
     try:
-        attractor_distance_vis_error_results_1 = np.load(os.path.join(eval_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_attractor-dist-visible-1.npy'))
-        attractor_distance_new_error_results_1 = np.load(os.path.join(eval_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_attractor-dist-new-1.npy'))
-        attractor_distance_vis_error_results_2 = np.load(os.path.join(eval_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_attractor-dist-visible-2.npy'))
-        attractor_distance_new_error_results_2 = np.load(os.path.join(eval_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_attractor-dist-new-2.npy'))
+        attractor_distance_vis_error_results_1 = np.load(os.path.join(plot_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_attractor-dist-visible-1.npy'))
+        attractor_distance_new_error_results_1 = np.load(os.path.join(plot_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_attractor-dist-new-1.npy'))
+        attractor_distance_vis_error_results_2 = np.load(os.path.join(plot_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_attractor-dist-visible-2.npy'))
+        attractor_distance_new_error_results_2 = np.load(os.path.join(plot_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_attractor-dist-new-2.npy'))
         print("loaded")
 
     except:
@@ -115,7 +119,7 @@ for current_c in range(len(condition_directories)):
                         input_traj = xp.tile(x_train[i_1,:], (num_classes,1))
 
                         # generate the trajectory using the corresponding training_hyprun
-                        plottingFile = os.path.join(eval_dir, 'pattern-1_hyp-' + str(test_hyp_priors[current_c]) + '_run-' + str(current_r) + '_interp-' + str(np.around(j,2)) + '_attractors_' + str(i_1) + '-' + str(i_2) +  '_')
+                        plottingFile = os.path.join(plot_dir, 'pattern-1_hyp-' + str(test_hyp_priors[current_c]) + '_run-' + str(current_r) + '_interp-' + str(np.around(j,2)) + '_attractors_' + str(i_1) + '-' + str(i_2) +  '_')
 
                         init_state, res, results_path, u_h_history = complete_drawing(model, params, input_traj, reduced_time_steps, is_selection_mode = np.tile(interpol_is,(num_classes,1)), hyp_prior = test_hyp_priors[current_c], x_start = None, plottingFile = plottingFile, add_BI_variance = add_BI_variance, gpu_id=-1)
 
@@ -136,7 +140,7 @@ for current_c in range(len(condition_directories)):
                         input_traj = xp.tile(x_train[i_2,:], (num_classes,1))
 
                         # generate the trajectory using the corresponding training_hyprun
-                        plottingFile = os.path.join(eval_dir, 'pattern-2_hyp-' + str(test_hyp_priors[current_c]) + '_run-' + str(current_r) + '_interp-' + str(np.around(j,2)) + '_attractors_' + str(i_1) + '-' + str(i_2) +  '_')
+                        plottingFile = os.path.join(plot_dir, 'pattern-2_hyp-' + str(test_hyp_priors[current_c]) + '_run-' + str(current_r) + '_interp-' + str(np.around(j,2)) + '_attractors_' + str(i_1) + '-' + str(i_2) +  '_')
 
                         init_state, res, results_path, u_h_history = complete_drawing(model, params, input_traj, reduced_time_steps, is_selection_mode = np.tile(interpol_is,(num_classes,1)), hyp_prior = test_hyp_priors[current_c], x_start = None, plottingFile = plottingFile, add_BI_variance = add_BI_variance, gpu_id=-1)
 
@@ -151,13 +155,13 @@ for current_c in range(len(condition_directories)):
                         attractor_distance_new_error_results_2[current_r][interps.tolist().index(j)].append(distance_measure(correct_trajectory[reduced_time_steps:,:], generated_trajectory[reduced_time_steps:,:], method = 'dtw'))
 
 
-        np.save(os.path.join(eval_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_attractor-dist-visible-1.npy'), attractor_distance_vis_error_results_1)
-        np.save(os.path.join(eval_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_attractor-dist-new-1.npy'), attractor_distance_new_error_results_1)
-        np.save(os.path.join(eval_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_attractor-dist-visible-2.npy'), attractor_distance_vis_error_results_2)
-        np.save(os.path.join(eval_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_attractor-dist-new-2.npy'), attractor_distance_new_error_results_2)
+        np.save(os.path.join(plot_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_attractor-dist-visible-1.npy'), attractor_distance_vis_error_results_1)
+        np.save(os.path.join(plot_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_attractor-dist-new-1.npy'), attractor_distance_new_error_results_1)
+        np.save(os.path.join(plot_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_attractor-dist-visible-2.npy'), attractor_distance_vis_error_results_2)
+        np.save(os.path.join(plot_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_attractor-dist-new-2.npy'), attractor_distance_new_error_results_2)
 
 # for now, all classes are condensed
-colors = ['blue', 'red', 'green']
+colors = ['blue', 'red', 'green', 'yellow', 'orange']
 
 fig = plt.figure('New_best', figsize=(35.0, 12.0))
 plt.rcParams.update({'font.size': 20, 'legend.fontsize': 20})
@@ -168,10 +172,10 @@ ax3 = fig.add_subplot(133) # new part
 # load parameter condition
 c=0
 for current_c in condition_directories:
-    attractor_distance_vis_error_results_1 = np.load(os.path.join(eval_dir, 'hyp-' + current_c + '_attractor-dist-visible-1.npy'))
-    attractor_distance_new_error_results_1 = np.load(os.path.join(eval_dir, 'hyp-' + current_c + '_attractor-dist-new-1.npy'))
-    attractor_distance_vis_error_results_2 = np.load(os.path.join(eval_dir, 'hyp-' + current_c + '_attractor-dist-visible-2.npy'))
-    attractor_distance_new_error_results_2 = np.load(os.path.join(eval_dir, 'hyp-' + current_c + '_attractor-dist-new-2.npy'))
+    attractor_distance_vis_error_results_1 = np.load(os.path.join(plot_dir, 'hyp-' + current_c + '_attractor-dist-visible-1.npy'))
+    attractor_distance_new_error_results_1 = np.load(os.path.join(plot_dir, 'hyp-' + current_c + '_attractor-dist-new-1.npy'))
+    attractor_distance_vis_error_results_2 = np.load(os.path.join(plot_dir, 'hyp-' + current_c + '_attractor-dist-visible-2.npy'))
+    attractor_distance_new_error_results_2 = np.load(os.path.join(plot_dir, 'hyp-' + current_c + '_attractor-dist-new-2.npy'))
 
     
     # all "other" patterns compared to pattern 0, plotting patterns individually
@@ -185,11 +189,11 @@ for current_c in condition_directories:
         meanpat = np.mean(collect_over_patterns_1[pat], axis=1)
         stdpat = np.std(collect_over_patterns_1[pat], axis=1)
         if c==0:
-            ax1.errorbar(interps, meanpat, stdpat, color=colors[0])#, label=str(current_c) + " (1)")
+            ax1.errorbar(interps, meanpat, stdpat, color=colors[pat])#, label=str(current_c) + " (1)")
         if c==1:
-            ax2.errorbar(interps, meanpat, stdpat, color=colors[0])#, label=str(current_c) + " (1)")
+            ax2.errorbar(interps, meanpat, stdpat, color=colors[pat])#, label=str(current_c) + " (1)")
         if c==2:
-            ax3.errorbar(interps, meanpat, stdpat, color=colors[0])#, label=str(current_c) + " (1)")
+            ax3.errorbar(interps, meanpat, stdpat, color=colors[pat])#, label=str(current_c) + " (1)")
 
     collect_over_patterns_2 = np.zeros((num_classes-1, len(interps), num_runs))
     for r in range(num_runs):
@@ -200,28 +204,28 @@ for current_c in condition_directories:
         meanpat = np.mean(collect_over_patterns_2[pat], axis=1)
         stdpat = np.std(collect_over_patterns_2[pat], axis=1)
         if c==0:
-            ebplot = ax1.errorbar(interps, meanpat, stdpat, color=colors[1])#, label=str(current_c) + " (1)")
+            ebplot = ax1.errorbar(interps, meanpat, stdpat, color=colors[pat])#, label=str(current_c) + " (1)")
             ebplot[-1][0].set_linestyle('--')
         if c==1:
-            ebplot = ax2.errorbar(interps, meanpat, stdpat, color=colors[1])#, label=str(current_c) + " (1)")
+            ebplot = ax2.errorbar(interps, meanpat, stdpat, color=colors[pat])#, label=str(current_c) + " (1)")
             ebplot[-1][0].set_linestyle('--')
         if c==2:
-            ebplot = ax3.errorbar(interps, meanpat, stdpat, color=colors[1])#, label=str(current_c) + " (1)")
+            ebplot = ax3.errorbar(interps, meanpat, stdpat, color=colors[pat])#, label=str(current_c) + " (1)")
             ebplot[-1][0].set_linestyle('--')
 
 
-    with open("indiv-pattern-error-1_" + current_c + ".txt", 'w') as f:
+    with open(os.path.join("indiv-pattern-1_" + current_c + ".txt"), 'w') as f:
         f.write("ip\tmeanp1\tstdp1\tmeanp2\tstdp2\tmeanp3\tstdp3\tmeanp4\tstdp4\tmeanp5\tstdp5\n")
         for ip in range(len(interps)):
-            f.write(str(ip) + "\t")
+            f.write(str(ip/10) + "\t")
             for pat in range(num_classes-1):
                 f.write(str(np.mean(collect_over_patterns_1[pat], axis=1)[ip]) + "\t" + str(np.std(collect_over_patterns_1[pat], axis=1)[ip]) + "\t")
             f.write("\n")
 
-    with open("indiv-pattern-2_" + current_c + ".txt", 'w') as f:
+    with open(os.path.join(plot_dir, "indiv-pattern-2_" + current_c + ".txt"), 'w') as f:
         f.write("ip\tmeanp1\tstdp1\tmeanp2\tstdp2\tmeanp3\tstdp3\tmeanp4\tstdp4\tmeanp5\tstdp5\n")
         for ip in range(len(interps)):
-            f.write(str(ip) + "\t")            
+            f.write(str(ip/10) + "\t")            
             for pat in range(num_classes-1):
                 f.write(str(np.mean(collect_over_patterns_2[pat], axis=1)[ip]) + "\t" + str(np.std(collect_over_patterns_2[pat], axis=1)[ip]) + "\t")
             f.write("\n")
@@ -293,7 +297,7 @@ ax3.set_ylabel("Hypo-prior (1000)")
 ax1.set_ylim([0, 0.2])
 ax2.set_ylim([0, 0.2])
 ax3.set_ylim([0, 0.4])
-plt.savefig('bla.pdf')#(os.path.join(eval_dir, '../bla.png'))
+plt.savefig(os.path.join(plot_dir, 'final.pdf'))#(os.path.join(eval_dir, '../bla.png'))
 plt.close()
 
 

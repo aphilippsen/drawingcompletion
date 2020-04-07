@@ -64,11 +64,11 @@ num_neurons = 100
 explicit_sensor_variance = 0.01
 
 # Hypo prior that influences BI: this determines the different H settings
-hyp_prior_runs = [1000, 1, 0.001, 0.01, 0.1, 10, 100]
+hyp_prior_runs = [10,100]#[1000, 1, 0.001, 0.01, 0.1, 10, 100]
 
 # typically False, you can set it to True if you want to use initial weights which are already stored somewhere, then define the location init_weight_dir here as well
-reuse_existing_weights = False
-init_weight_dir = ""
+reuse_existing_weights = True
+init_weight_dir = "/home/anja/github/drawingcompletion-revised/drawingcompletion/results/training/final_0.01-100_6x7/2020-03-31_14-37_0004609/initialWeights"
 if reuse_existing_weights:
     assert(init_weight_dir) # init_weight_dir has to be set with
 
