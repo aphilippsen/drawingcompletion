@@ -7,11 +7,11 @@ The effect of strong or weak reliance on priors is investigated to evaluate pote
 
 More details about the experiment and the scientific foundations can be found in the following paper:
 
-* Philippsen, Anja, and Yukie Nagai. "A predictive coding model of representational drawing in human children and chimpanzees." 2019 Joint IEEE 9th International Conference on Development and Learning and Epigenetic Robotics (ICDL-EpiRob). IEEE, 2019.
+* Anja Philippsen and Yukie Nagai. "A predictive coding model of representational drawing in human children and chimpanzees." 2019 Joint IEEE 9th International Conference on Development and Learning and Epigenetic Robotics (ICDL-EpiRob). IEEE, 2019.
 
 The model was also used in the following publication:
 
-* Oliva, Daniel, Anja Philippsen, and Yukie Nagai. "How development in the bayesian brain facilitates learning." 2019 Joint IEEE 9th International Conference on Development and Learning and Epigenetic Robotics (ICDL-EpiRob). IEEE, 2019.
+* Daniel Oliva, Anja Philippsen, and Yukie Nagai. "How development in the bayesian brain facilitates learning." 2019 Joint IEEE 9th International Conference on Development and Learning and Epigenetic Robotics (ICDL-EpiRob). IEEE, 2019.
 
 ## Documentation ##
 
@@ -24,6 +24,7 @@ The following packages are required (install e.g. via pip):
 * chainer
 * matplotlib
 * numpy
+* scikit-learn
 * dtw
 
 ### How to run ###
@@ -39,7 +40,7 @@ A GUI which allows you to draw (left mouse button) and store the created drawing
 Script that was used to preprocess the trajectories to equal length and to summarize them in a data sets file to be used for training etc. Code has to be adapted when adding new drawings.
 Two *npy* files are generated, one containing the trajectories and one containing the corresponding class labels.
 
-Drawing sets ready to use can be found in *data_generation/drawing-data-sets/*.
+Drawing sets which are ready to use can be found in *data_generation/drawing-data-sets/*.
 
 #### 2. Training ####
 
