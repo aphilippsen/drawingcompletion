@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pathlib
 
 #data_set_name = 'example'
-data_set_name = "final_0.01-100_6x7"#"tmpComp1000"#-training-set" #"training-2020-02-new-completion" # "tmp"#"training-2020-03_noise0.01"#test-set"
+data_set_name = "final_0.01-100_6x7_high-sens"#"tmpComp1000"#-training-set" #"training-2020-02-new-completion" # "tmp"#"training-2020-03_noise0.01"#test-set"
 #data_set_name = "2019-11-all-test-set"
 
 # Evaluation of the inference results
@@ -196,7 +196,7 @@ x = [[0.05, 2.05, 4.05, 6.05, 8.05, 10.05, 12.05], [0.3, 2.3, 4.3, 6.3, 8.3, 10.
 colors = ['red', 'orange', 'green', 'blue', 'gray', 'black']
 pattern_category = ['FACE', 'HOUSE', 'CAR', 'FLOWER', 'HUMAN', 'ROCKET']
 
-max_lim = 0.4
+max_lim = 0.2
 # which labels to put to these positions
 my_xticks = []
 for num_t in range(num_test_hyp):
@@ -371,7 +371,7 @@ image_idx_start = 0 # required if different lengths should be plot for making a 
 # traj_lengths_to_plot= np.concatenate((np.arange(num_timesteps), np.tile(90, (200,))))
 traj_lengths_to_plot = [90]
 
-figWidth = 50
+figWidth = 15
 # inf_idx = [6,7,8]
 #inf_idx = [0,1,2,3,4,5,6,7,8,9]
 inf_idx = list(np.arange(num_inferences))
@@ -433,6 +433,9 @@ for curr_r in range(num_runs):
             plt.savefig(os.path.join(plot_dir, 'Qualitative-' + str(test_hyp_all[test_hyp_condition]) + "_run-" + dir_list[curr_r] + "_" + str(image_idx) + fileformat))
             image_idx += 1
             plt.close()
+
+
+
 #
 # # run_idx = [6,7,8]
 # # run_idx = [0,1,2,3,4,5,6,7,8,9]
@@ -628,374 +631,54 @@ for curr_r in range(num_runs):
 
 """
 # Plot training data
-train_data = np.load('/home/anja/repos/cognitivemirroring/ChainerRNN/data/drawings/multi-stroke/drawings-190215-faces-houses-flowers.npy')
+#train_data = np.load('/home/anja/github/drawingcompletion/data_generation/drawing-data-sets/drawings-191105-6x7-train.npy')
+train_data = np.load('/home/anja/github/drawingcompletion/data_generation/drawing-data-sets/drawings-191105-6x3-test.npy')
 num_timesteps = 90
+plot_timesteps = 30
 input_dim = 3
 given_part = 0
-num_classes = 3
+num_classes = 6
+format_1 = 2
+format_2 = 3
 # 3rd dim == 1 means that this point is connected to the previous one, dim == 0 that not!
 
-fig = plt.figure('Original training data', figsize=(30, 10.0))
+fig = plt.figure('Original training data', figsize=(30, 17.5))
 plt.rcParams.update({'font.size': 55, 'legend.fontsize': 30})
-ax = fig.add_subplot(131)
-ax.set_xlabel('$x_0$')
-ax.set_ylabel('$x_1$')
-ax.set_xlim([-1, 1])
-ax.set_ylim([-0.9, 1.1])
-for i in range(0, train_data.shape[0], num_classes):
-    for t in range(1, num_timesteps):
-        traj = train_data[i,:].reshape((num_timesteps, input_dim))
-        if int(np.round(traj[t,2])) == 1:
-            if t < given_part:
-                ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'g', linewidth = 0.5)
+for cl in range(num_classes):
+    ax = fig.add_subplot(format_1, format_2, cl+1)
+    ax.set_xlabel('$x_0$')
+    ax.set_ylabel('$x_1$')
+    ax.set_xlim([-1, 1])
+    ax.set_ylim([-1, 1])
+    for i in range(cl, train_data.shape[0], num_classes):
+        for t in range(1, plot_timesteps):
+            traj = train_data[i,:].reshape((num_timesteps, input_dim))[0:plot_timesteps,:]
+            if int(np.round(traj[t,2])) == 1:
+                if t < given_part:
+                    ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'g', linewidth = 0.5)
+                else:
+                    ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'k', linewidth = 0.5)
             else:
-                ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'k', linewidth = 0.5)
-        else:
-            if t < given_part:
-                ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], '#11ff11', linewidth = 0.5)
-            else:
-                ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'lightgray', linewidth = 0.5)
-i=6
-for t in range(1, num_timesteps):
-    traj = train_data[i,:].reshape((num_timesteps, input_dim))
-    if int(np.round(traj[t,2])) == 1:
-        if t < given_part:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'g', linewidth = 5)
-        else:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'k', linewidth = 5)
-    else:
-        if t < given_part:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], '#11ff11', linewidth = 5)
-        else:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'lightgray', linewidth = 5)
+                if t < given_part:
+                    ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], '#11ff11', linewidth = 0.5)
+                else:
+                    ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'lightgray', linewidth = 0.5)
 
-ax = fig.add_subplot(132)
-ax.set_xlabel('$x_0$')
-# ax.set_ylabel('$x_1$')
-ax.set_xlim([-1, 1])
-ax.set_ylim([-0.9, 1.1])
-for i in range(1, train_data.shape[0], num_classes):
-    for t in range(1, num_timesteps):
-        traj = train_data[i,:].reshape((num_timesteps, input_dim))
+    i=cl
+    for t in range(1, plot_timesteps):
+        traj = train_data[i,:].reshape((num_timesteps, input_dim))[0:plot_timesteps,:]
         if int(np.round(traj[t,2])) == 1:
             if t < given_part:
-                ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'g', linewidth = 0.5)
+                ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'g', linewidth = 5)
             else:
-                ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'k', linewidth = 0.5)
+                ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'k', linewidth = 5)
         else:
             if t < given_part:
-                ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], '#11ff11', linewidth = 0.5)
+                ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], '#11ff11', linewidth = 5)
             else:
-                ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'lightgray', linewidth = 0.5)
-i=7
-for t in range(1, num_timesteps):
-    traj = train_data[i,:].reshape((num_timesteps, input_dim))
-    if int(np.round(traj[t,2])) == 1:
-        if t < given_part:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'g', linewidth = 5)
-        else:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'k', linewidth = 5)
-    else:
-        if t < given_part:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], '#11ff11', linewidth = 5)
-        else:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'lightgray', linewidth = 5)
-plt.yticks([], [])
-
-# plt.title('Training data generated by human')
-ax = fig.add_subplot(133)
-ax.set_xlabel('$x_0$')
-# ax.set_ylabel('$x_1$')
-ax.set_xlim([-1, 1])
-ax.set_ylim([-0.9, 1.1])
-for i in range(2, train_data.shape[0], num_classes):
-    for t in range(1, num_timesteps):
-        traj = train_data[i,:].reshape((num_timesteps, input_dim))
-        if int(np.round(traj[t,2])) == 1:
-            if t < given_part:
-                ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'g', linewidth = 0.5)
-            else:
-                ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'k', linewidth = 0.5)
-        else:
-            if t < given_part:
-                ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], '#11ff11', linewidth = 0.5)
-            else:
-                ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'lightgray', linewidth = 0.5)
-i=8
-for t in range(1, num_timesteps):
-    traj = train_data[i,:].reshape((num_timesteps, input_dim))
-    if int(np.round(traj[t,2])) == 1:
-        if t < given_part:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'g', linewidth = 5)
-        else:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'k', linewidth = 5)
-    else:
-        if t < given_part:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], '#11ff11', linewidth = 5)
-        else:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'lightgray', linewidth = 5)
-plt.yticks([], [])
+                ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'lightgray', linewidth = 5)
 
 plt.tight_layout()
 plt.savefig('original-training-data.pdf')
 plt.close()
-"""
-
-
-
-######################################
-# Plot training data                 #
-######################################
-
-"""
-# Plot network results
-from nets import load_network
-
-network_path = '/home/anja/repos/cognitivemirroring/ChainerRNN/results/190221_faces-houses-flowers_ng07/trained_nets/2019-02-21_10-24_0669245'
-network_file = 'network-epoch-21801.npz'
-
-params, model = load_network(network_path, model_filename=network_file)
-model.add_BI_variance = False
-
-# res, resv, resm, u_h_history = model.generate(model.initial_states.W.array, num_timesteps, epsilon_disturbance = 0, additional_output='activations', external_signal_variance = 1)
-res, resv, resm, pe, wpe = model.generate(model.initial_states.W.array, num_timesteps, external_input = np.float32(train_data[0:3,:]), epsilon_disturbance = 0)
-
-fig = plt.figure('Network generation at 21800 epochs', figsize=(30, 10.0))
-plt.rcParams.update({'font.size': 55, 'legend.fontsize': 30})
-ax = fig.add_subplot(131)
-ax.set_xlabel('$x_0$')
-ax.set_ylabel('$x_1$')
-ax.set_xlim([-1, 1])
-ax.set_ylim([-0.9, 1.1])
-i=0
-for t in range(1, num_timesteps):
-    traj = res[i,:].reshape((num_timesteps, input_dim))
-    if int(np.round(traj[t,2])) == 1:
-        if t < given_part:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'g', linewidth = 5)
-        else:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'k', linewidth = 5)
-    else:
-        if t < given_part:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], '#11ff11', linewidth = 5)
-        else:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'lightgray', linewidth = 5)
-
-ax = fig.add_subplot(132)
-ax.set_xlabel('$x_0$')
-# ax.set_ylabel('$x_1$')
-ax.set_xlim([-1, 1])
-ax.set_ylim([-0.9, 1.1])
-i=1
-for t in range(1, num_timesteps):
-    traj = res[i,:].reshape((num_timesteps, input_dim))
-    if int(np.round(traj[t,2])) == 1:
-        if t < given_part:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'g', linewidth = 5)
-        else:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'k', linewidth = 5)
-    else:
-        if t < given_part:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], '#11ff11', linewidth = 5)
-        else:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'lightgray', linewidth = 5)
-# plt.title('Proactive network generation after 21800 epochs')
-plt.yticks([], [])
-
-ax = fig.add_subplot(133)
-ax.set_xlabel('$x_0$')
-# ax.set_ylabel('$x_1$')
-ax.set_xlim([-1, 1])
-ax.set_ylim([-0.9, 1.1])
-i=2
-for t in range(1, num_timesteps):
-    traj = res[i,:].reshape((num_timesteps, input_dim))
-    if int(np.round(traj[t,2])) == 1:
-        if t < given_part:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'g', linewidth = 5)
-        else:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'k', linewidth = 5)
-    else:
-        if t < given_part:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], '#11ff11', linewidth = 5)
-        else:
-            ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'lightgray', linewidth = 5)
-plt.yticks([], [])
-plt.tight_layout()
-plt.savefig(os.path.join(plot_dir, 'network-generation-21801.pdf'))
-plt.close()
-"""
-
-######################################
-# Plotting errors, not used currently#
-######################################
-"""
-proact_err = np.load('/home/anja/repos/cognitivemirroring/ChainerRNN/results/190221_faces-houses-flowers_ng07/trained_nets/2019-02-21_10-24_0669245/history_generation_error_proactive.npy')
-react_err = np.load('/home/anja/repos/cognitivemirroring/ChainerRNN/results/190221_faces-houses-flowers_ng07/trained_nets/2019-02-21_10-24_0669245/history_generation_error_reactive.npy')
-
-proact_means = np.mean(np.concatenate((proact_err[0], proact_err[1], proact_err[2]), axis=0).reshape((3,-1)),axis=0)
-
-fig = plt.figure('Network generation at 21800 epochs', figsize=(35, 10.0))
-plt.rcParams.update({'font.size': 35, 'legend.fontsize': 30})
-ax = fig.add_subplot(111)
-# ax.set_xlabel('$x_0$')
-# ax.set_ylabel('$x_1$')
-# ax.set_xlim([-1, 1])
-# ax.set_ylim([-0.9, 1.1])
-plt.plot(np.arange(proact_means.shape[0]), proact_means)
-plt.savefig(os.path.join(plot_dir, 'proact-error.pdf'))
-plt.close()
-
-react_means = np.mean(np.concatenate((react_err[0], react_err[1], react_err[2]), axis=0).reshape((3,-1)),axis=0)
-
-fig = plt.figure('Network generation at 21800 epochs', figsize=(35, 10.0))
-plt.rcParams.update({'font.size': 35, 'legend.fontsize': 30})
-ax = fig.add_subplot(111)
-# ax.set_xlabel('$x_0$')
-# ax.set_ylabel('$x_1$')
-# ax.set_xlim([-1, 1])
-# ax.set_ylim([-0.9, 1.1])
-plt.plot(np.arange(react_means.shape[0]), react_means)
-plt.savefig(os.path.join(plot_dir, 'react-error.pdf'))
-plt.close()
-"""
-
-
-######################################
-# Bayesian inference for ICDL19_Anja #
-######################################
-
-"""
-import population_coding as pop
-
-# Bayesian inference for ICDL paper
-
-# # For ICDL19_Anja
-# hyper
-pred_var = 0.001
-# # normal
-# pred_var = 0.005
-# # hypo
-# pred_var = 0.02
-
-
-# # For ICDL19_Daniel:
-# # early learning stage
-# pred_var = 0.1
-# input_var = 0.005
-# # # later learning stage
-# # pred_var = 0.015
-# # input_var = 0.005
-# # # fog
-# # pred_var = 0.015
-# # input_var = 0.05
-
-pred_mean = 0.3
-input_mean = 0.7
-
-sigma = np.sqrt((input_var * pred_var) / (input_var + pred_var))
-mu = np.power(sigma, 2) * (((pred_mean / pred_var) + (input_mean / input_var)))
-
-input_pop = pop.transform_to_population_coding(np.reshape(input_mean, (1,1)), 1000, np.reshape(input_var,(1,1)), -1.0, 1.0)
-prior_pop = pop.transform_to_population_coding(np.reshape(pred_mean, (1,1)), 1000, np.reshape(pred_var,(1,1)), -1.0, 1.0)
-posterior_pop = pop.transform_to_population_coding(np.reshape(mu, (1,1)), 1000, np.reshape(sigma ** 2,(1,1)), -1.0, 1.0)
-
-output = np.random.normal(mu, sigma, 1)
-
-print(output)
-
-value_range = np.reshape(np.linspace(-1.0, 1.0, 1000), (1,1000))
-
-fig = plt.figure('Bayesian Inference', figsize = (16.0, 10.0))
-
-plt.rcParams.update({'font.size': 40, 'legend.fontsize': 40})
-plt.rc('xtick', labelsize=40)
-plt.rc('ytick', labelsize=40)
-
-ax = fig.add_subplot(111)
-ax.set_xlabel('position x')
-ax.set_ylabel('probability in %')
-
-#ax.set_title('Early learning stage')
-# ax.set_title('Medium learning stage')
-# ax.set_title('Late learning stage')
-# ax.set_title('After learning, environmental uncertainty')
-ax.plot(value_range[0, :], input_pop[0, :], 'r', label='sensory input', linewidth=7.0)
-ax.plot(value_range[0, :], prior_pop[0, :], 'b', label='prior', linewidth=7.0)
-ax.plot(value_range[0, :], posterior_pop[0, :], 'g', label='posterior', linewidth=7.0)
-
-ax.set_xlim([0, 1])
-ax.set_ylim([0, 7])
-ax.legend()
-
-#plt.show()
-plt.tight_layout()
-
-
-# # For ICDL19_Anja
- plt.savefig('BI_hyper.pdf')
-# plt.savefig('BI_normal.pdf')
-# plt.savefig('BI_hypo.pdf')
-
-# # For ICDL19_Daniel
-# plt.savefig('BI_early.pdf')
-# # plt.savefig('BI_later.pdf')
-# # plt.savefig('BI_fog.pdf')
-
-plt.close()
-"""
-
-##########################
-# Plotting training data #
-##########################
-
-"""
-x_train = np.float32(np.load('/home/anja/repos/cognitivemirroring/ChainerRNN/data/drawings/multi-stroke/drawings-190215-faces-houses-flowers.npy'))
-
-# # for video animation
-input_dim = 3
-figWidth = 10
-num_timesteps = 90
-fileformat = '.png'
-# traj_lengths_to_plot= np.arange(num_timesteps)
-traj_lengths_to_plot= np.concatenate((np.arange(90), np.tile(90, (200,))))
-
-image_idx = 0
-for l in traj_lengths_to_plot:
-    fig = plt.figure('Training data', figsize=(10,4)) #figsize=(10, 11.0))
-    plt.rcParams.update({'font.size': 35, 'legend.fontsize': 30})
-    curr_subplot=0
-    for pat in range(0,3):
-
-        ax = fig.add_subplot(1,3,1 + curr_subplot)
-        # ax.set_xlabel('$x_0$')
-        # ax.set_ylabel('$x_1$')
-        ax.set_xlim([-0.9, 0.9])
-        ax.set_ylim([-0.9, 1])
-        # if run_idx[r] > 0:
-        plt.yticks([], [])
-        # if pat < 2:
-        plt.xticks([], [])
-        # ax.plot(x_train[pat,:].reshape((-1,input_dim))[0:30,0], x_train[pat,:].reshape((-1,input_dim))[0:30,1], 'orange', linewidth = 5)
-        for pat2 in range(pat, 30, 3):
-            traj = x_train[pat2,:].reshape((num_timesteps, input_dim))
-            for t in range(1, l):
-                if int(np.round(traj[t,2])) == 1:
-                    ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'k', linewidth = 1)
-                else:
-                    ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'lightgray', linewidth = 1)
-
-
-        if pat == 0:
-            plt.title('FACE')
-        elif pat == 1:
-            plt.title('HOUSE')
-        elif pat == 2:
-            plt.title('FLOWER')
-        curr_subplot += 1
-    plt.tight_layout()
-    plt.savefig(os.path.join(plot_dir, 'Training-data_' + str(image_idx) + fileformat))
-    image_idx += 1
-    plt.close()
-
 """

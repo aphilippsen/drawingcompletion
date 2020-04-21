@@ -101,6 +101,7 @@ for train_hyp in train_hyp_all:
         current_net = os.path.join(current_run, train_hyp)
 
         params, model = load_network(current_net, model_filename="network-final")
+        model.add_BI_variance = False
 
         # proactive
         res, resv, resm, u_h_history = model.generate(model.initial_states.W.array, 90, add_variance_to_output = 0, additional_output='activations', external_signal_variance = model.external_signal_variance)

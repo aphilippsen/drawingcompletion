@@ -105,39 +105,35 @@ def plot_training_images_for_video(index,training_data,plot_dir):
 
 if __name__ == '__main__':
 
-    plot_dir= os.path.join(os.getcwd(),'config_shape')
-    training_data_directory = os.path.join(os.getcwd(),'data/drawings/multi-stroke')
-
     fig, ax = plt.subplots(nrows=1, ncols=1)
 
-    """
-    # Use in case you want to display existing drawings as a template
-
-    orig_training_data = np.load(os.path.join(training_data_directory, 'drawings-190215-faces-houses-flowers.npy'),allow_pickle=True)
+    # Use in case you want to display existing drawings in the background.
+    WHICH_STIMULUS = -1
+    training_data_directory = 'data_generation/drawing-data-sets')
+    orig_training_data = np.load(os.path.join(training_data_directory, 'drawings-191105-6-drawings.npy'),allow_pickle=True)
     index= 0
     num_timesteps=90
-    display_timesteps=30
+    display_timesteps=90
     input_dim = 3
     given_part = 0
+    num_classes = 6
 
-    WHICH_STIMULUS = -1
-    
-    for t in range(1, num_timesteps):
-        for stim in range(WHICH_STIMULUS,len(orig_training_data),3):
-            traj = orig_training_data[stim].reshape((num_timesteps, input_dim))
-            if t >= display_timesteps:
-                continue
-            if int(np.round(traj[t,2])) == 1:
-                if t < given_part:
-                    ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'g', linewidth = 0.5)
+    if WHICH_STIMULUS >= 0:
+        for t in range(1, num_timesteps):
+            for stim in range(WHICH_STIMULUS,len(orig_training_data),num_classes):
+                traj = orig_training_data[stim].reshape((num_timesteps, input_dim))
+                if t >= display_timesteps:
+                    continue
+                if int(np.round(traj[t,2])) == 1:
+                    if t < given_part:
+                        ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'g', linewidth = 0.5)
+                    else:
+                        ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'k', linewidth = 0.5)
                 else:
-                    ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'k', linewidth = 0.5)
-            else:
-                if t < given_part:
-                    ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], '#11ff11', linewidth = 0.5)
-                else:
-                    ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'lightgray', linewidth = 0.5)
-    """
+                    if t < given_part:
+                        ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], '#11ff11', linewidth = 0.5)
+                    else:
+                        ax.plot(traj[t-1:t+1,0], traj[t-1:t+1,1], 'lightgray', linewidth = 0.5)
 
     interface = DrawingGenerationInterface(ax, process_stroke, process_drawing)
     plt.show(block=False)

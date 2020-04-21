@@ -19,7 +19,7 @@ num_patterns = 6 # number of different training sample patterns
 
 training_data_file = "data_generation/drawing-data-sets/drawings-191105-6x3-test.npy"
 #data_set_name = 'example'
-data_set_name = "final_0.01-100_6x7" #"training-2020-02-test-set"
+data_set_name = "final_0.01-100_6x7_1" #"training-2020-02-test-set"
 #data_set_name = "2019-11-all-test-set"
 mode = 'inference'
 inf_epochs = np.concatenate((np.arange(1,2001,100), [2000]))
@@ -28,7 +28,7 @@ training_hyp_all = ['0.001', '0.01', '0.1', '1', '10', '100', '1000']
 
 num_timesteps = 90
 num_neurons = 100
-graphics_extension = ".png"
+graphics_extension = ".pdf"
 
 # this code is only for one reduced_time_steps at a time! (reduced=0 is the array index that should be used)
 reduced = 0
@@ -280,18 +280,19 @@ for training_hyp in training_hyp_all:
 
         colors = ['red', 'orange', 'green', 'blue', 'gray', 'black']
         pattern_category = ['FACE', 'HOUSE', 'CAR', 'FLOWER', 'HUMAN', 'ROCKET']
+        to_plot_indices = [0, 1, 3] # only subset of patterns to make plots clearer
 
         # 2d
-        fig = plt.figure('Trained and inferred initial states (2d)', figsize=(30,30)) #figsize=(10, 11.0))
-        plt.rcParams.update({'font.size': 50, 'legend.fontsize': 30})
+        fig = plt.figure('Trained and inferred initial states (2d)', figsize=(10,10))
+        plt.rcParams.update({'font.size': 30, 'legend.fontsize': 30})
         ax = fig.add_subplot(111)
 
         for th in plotting_test_hyps:
-            for i in range(num_patterns):
+            for i in to_plot_indices:
                 for j in range(num_inferences):
                     ax.scatter(pca_inferred_is[th,0][j][0][i,0], pca_inferred_is[th,0][j][0][i,1], color=colors[i], marker='o',s=2000)
 
-        for i in range(num_patterns):
+        for i in to_plot_indices:
             ax.scatter(pca_trained_is[i,0], pca_trained_is[i,1], color=colors[i], marker='*',s=5000, label=pattern_category[i])
 
         plt.legend()
@@ -301,12 +302,12 @@ for training_hyp in training_hyp_all:
         # From 0 to 30
 
         # 2d
-        fig = plt.figure('Neuron activations after 30 timesteps (2d)', figsize=(30,30)) #figsize=(10, 11.0))
-        plt.rcParams.update({'font.size': 50, 'legend.fontsize': 30})
+        fig = plt.figure('Neuron activations up to 30 timesteps (2d)', figsize=(10,10)) #figsize=(10, 11.0))
+        plt.rcParams.update({'font.size': 30, 'legend.fontsize': 30})
         ax = fig.add_subplot(111)
 
         for th in plotting_test_hyps:
-            for i in range(num_patterns):
+            for i in to_plot_indices:
                 for j in range(num_inferences):
                     for t in range(30):
                         if t==1:
@@ -316,6 +317,8 @@ for training_hyp in training_hyp_all:
                         else:
                             ax.scatter(pca_uh_history[th,0][j,i][t,0], pca_uh_history[th,0][j,i][t,1], color=colors[i], marker='o',s=200)
 
+        ax.set_xlim([-1, 1])
+        ax.set_ylim([-1, 1])
         #plt.legend()
         plt.savefig(os.path.join(result_dir, eval_setting + '_uh-2d_run-' + dir_list[curr_r] + graphics_extension))
         plt.close()
@@ -325,12 +328,12 @@ for training_hyp in training_hyp_all:
         # From 30 to end
 
         # 2d
-        fig = plt.figure('Neuron activations after 30 timesteps (2d)', figsize=(30,30)) #figsize=(10, 11.0))
-        plt.rcParams.update({'font.size': 50, 'legend.fontsize': 30})
+        fig = plt.figure('Neuron activations after 30 timesteps (2d)', figsize=(10,10)) #figsize=(10, 11.0))
+        plt.rcParams.update({'font.size': 30, 'legend.fontsize': 30})
         ax = fig.add_subplot(111)
 
         for th in plotting_test_hyps:
-            for i in range(num_patterns):
+            for i in to_plot_indices:
                 for j in range(num_inferences):
                     for t in np.arange(30,90):
                         if t==30:
@@ -339,6 +342,8 @@ for training_hyp in training_hyp_all:
                             ax.scatter(pca_uh_history[th,0][j,i][t,0], pca_uh_history[th,0][j,i][t,1], color=colors[i], marker='o',s=200)
 
         #plt.legend()
+        ax.set_xlim([-1, 1])
+        ax.set_ylim([-1, 1])
         plt.savefig(os.path.join(result_dir, eval_setting + '_uh-30-to-end_2d_run-' + dir_list[curr_r] + graphics_extension))
         plt.close()
 

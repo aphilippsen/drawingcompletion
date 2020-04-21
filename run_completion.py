@@ -25,13 +25,18 @@ else:
 
 # if defined, this is the name of a subfolder of results/training where the trained networks to be used here are located
 #data_set_name = "example"
-data_set_name = "final_0.01-100_6x7"#"tmpComp1-training-set"#"training-2020-02-new-completion"#"training-2020-03_noise0.01"#test-set"
+data_set_name = "final_0.01-100_6x7_high-sens"#"tmpComp1-training-set"#"training-2020-02-new-completion"#"training-2020-03_noise0.01"#test-set"
 #data_set_name = "2019-11-all-test-set"
 
 # which training parameter conditions to check
-condition_directories = ['100'] #, '1', '10', '100']
+condition_directories = ['100'] #, 0.01 0.1 10
 # which hyp_prior condition to use for testing:
 test_hyp_priors = [100]
+
+# which value for σ2_sensor should be assumed if no external input is available (affects amount of randomness of drawing in hypo-prior condition)
+high_sensory_variance = 1000000
+
+used_measure = 'dtw'
 
 # trajectory data
 training_data_file = "data_generation/drawing-data-sets/drawings-191105-6x3-test.npy"#-drawings.npy"
@@ -142,7 +147,7 @@ for current_r in range(len(run_directories)):
                 for reduced_time_steps in reduced_time_steps_list:
                     plottingFile = os.path.join(results_dir, 'hyp-' + str(hyp_prior) + '_mode-' + str(is_selection_mode) + '_reduced-' + str(reduced_time_steps) +'_run-' + str(r))
 
-                    init_state, res, results_path, u_h_history = complete_drawing(model, params, input_traj, reduced_time_steps, is_selection_mode = is_selection_mode, hyp_prior = hyp_prior, x_start = x_start, plottingFile = plottingFile, add_BI_variance = add_BI_variance, inference_epochs=inference_epochs, gpu_id = gpu_id)
+                    init_state, res, results_path, u_h_history = complete_drawing(model, params, input_traj, reduced_time_steps, is_selection_mode = is_selection_mode, hyp_prior = hyp_prior, high_sensory_variance = high_sensory_variance, x_start = x_start, plottingFile = plottingFile, add_BI_variance = add_BI_variance, inference_epochs=inference_epochs, gpu_id = gpu_id)
 
                     final_inferred_is[reduced_time_steps_list.index(reduced_time_steps)].append(cuda.to_cpu(init_state))
                     for curr_class in range(num_classes):
@@ -161,7 +166,7 @@ for current_r in range(len(run_directories)):
 
                         generated_trajectory = res[curr_class,:].reshape((-1,model.num_io))
                         correct_trajectory = input_traj[curr_class,:].reshape((-1,model.num_io))
-                        traj_vis_to_corr = distance_measure(correct_trajectory[1:reduced_time_steps,:], generated_trajectory[0:reduced_time_steps-1,:], method='dtw')
+                        traj_vis_to_corr = distance_measure(correct_trajectory[1:reduced_time_steps,:], generated_trajectory[0:reduced_time_steps-1,:], method=used_measure)
 
                         all_trajectories = x_train[p:p+num_classes,:]
                         traj_vis_to_best = 100 # some high PE for init
@@ -169,7 +174,7 @@ for current_r in range(len(run_directories)):
                         for i in range(all_trajectories.shape[0]):
                             # compare to every trajectory
                             current_trajectory = all_trajectories[i,:].reshape((-1,model.num_io))
-                            current_best_PE = distance_measure(current_trajectory[1:reduced_time_steps,:], generated_trajectory[0:reduced_time_steps-1,:], method='dtw')
+                            current_best_PE = distance_measure(current_trajectory[1:reduced_time_steps,:], generated_trajectory[0:reduced_time_steps-1,:], method=used_measure)
                             # store if it has the smallest PE so far:
                             if current_best_PE < traj_vis_to_best:
                                 traj_vis_to_best = current_best_PE
@@ -180,7 +185,7 @@ for current_r in range(len(run_directories)):
 
                         # PE of traj_new part
                         # to the correct trajectory
-                        traj_new_to_corr = distance_measure(correct_trajectory[reduced_time_steps+1:,:], generated_trajectory[reduced_time_steps:-1,:], method='dtw')
+                        traj_new_to_corr = distance_measure(correct_trajectory[reduced_time_steps+1:,:], generated_trajectory[reduced_time_steps:-1,:], method=used_measure)
 
                         # to any (the best) trajectory
                         traj_new_to_best = 100 # some high PE for init
@@ -188,7 +193,7 @@ for current_r in range(len(run_directories)):
                         for i in range(all_trajectories.shape[0]):
                             # compare to every trajectory
                             current_trajectory = all_trajectories[i,:].reshape((-1,model.num_io))
-                            current_best_PE = distance_measure(current_trajectory[reduced_time_steps+1:,:], generated_trajectory[reduced_time_steps:-1,:], method='dtw')
+                            current_best_PE = distance_measure(current_trajectory[reduced_time_steps+1:,:], generated_trajectory[reduced_time_steps:-1,:], method=used_measure)
                             # store if it has the smallest PE so far:
                             if current_best_PE < traj_new_to_best:
                                 traj_new_to_best = current_best_PE

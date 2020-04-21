@@ -1,73 +1,92 @@
-# drawingcompletion
-Computational model replicating the performance of how human children and chimpanzees complete drawings
+# drawingcompletion: A predictive coding account for cognition in human children and chimpanzees: A case study of drawing #
 
+## Overview ##
 
-Requirements:
--------------
+This code implements drawing completion as a trajectory learning task based on a recurrent neural network model which integrates sensory information with own predictions using Bayesian inference.
+The effect of strong or weak reliance on priors is investigated to evaluate potential cognitive mechanisms for differences in the drawing behavior between human children and chimpanzees.
+
+More details about the experiment and the scientific foundations can be found in the following paper:
+
+* Philippsen, Anja, and Yukie Nagai. "A predictive coding model of representational drawing in human children and chimpanzees." 2019 Joint IEEE 9th International Conference on Development and Learning and Epigenetic Robotics (ICDL-EpiRob). IEEE, 2019.
+
+The model was also used in the following publication:
+
+* Oliva, Daniel, Anja Philippsen, and Yukie Nagai. "How development in the bayesian brain facilitates learning." 2019 Joint IEEE 9th International Conference on Development and Learning and Epigenetic Robotics (ICDL-EpiRob). IEEE, 2019.
+
+## Documentation ##
 
 The code runs with Python3 and is implemented using the CHAINER deep learning framework.
 
+### Installation ###
+
 The following packages are required (install e.g. via pip):
-chainer
-matplotlib
-numpy
-dtw
 
+* chainer
+* matplotlib
+* numpy
+* dtw
 
-Contents:
----------
+### How to run ###
 
-1.-4. describe the main flow for how to generate results using the source code.
+The code can be used to generate results for the  given training trajectories or other type of training data. Steps 1 to 4 describe the main flow for generating results.
 
-1. Data creation
+#### 1. Data creation ####
 
-data_generation/generate_training_data.py:
+**data_generation/generate_training_data.py:**
 A GUI which allows you to draw (left mouse button) and store the created drawings (right mouse button).
 
-data_generation/trajectory_multistroke_preprocessing.py:
-Preprocesses the trajectories (equal length) and summarizes them in data sets to be used for training etc. Code has to be adapted when adding new drawings.
-Generates a ...drawings.npy containing the drawings and ...drawings-classes.npy containing the corresponding class labels.
+**data_generation/trajectory_multistroke_preprocessing.py:**
+Script that was used to preprocess the trajectories to equal length and to summarize them in a data sets file to be used for training etc. Code has to be adapted when adding new drawings.
+Two *npy* files are generated, one containing the trajectories and one containing the corresponding class labels.
 
-Existing drawing data can be found in the subfolders, containing the raw drawings and the preprocessed drawing data sets.
+Drawing sets ready to use can be found in *data_generation/drawing-data-sets/*.
 
-2. Training
+#### 2. Training ####
 
-run_training.py:
-Main file to start the network training. Running it generates a folder in results/training/ with name data_set_name in with subfolders are created for each call of run_training.py named after the current date and time. Inside these folder, for each parameter condition one folder will be generated in which the trained network is stored.
+**run_training.py:**
+Main file to start the network training. Running it generates a folder in *results/training/* with name *data_set_name* in with subfolders are created for each call of run_training.py named after the current date and time. Inside these folder, for each parameter condition one folder will be generated in which the trained network is stored.
 
-3. Completion
+#### 3. Completion ####
 
-run_completion.py:
-Loads the trained networks (adjust the directory if necessary), then the networks are presented with the first 30% of the training trajectories and asked to complete them.
+**run_completion.py:**
+Loads the trained networks (adjust the directory if necessary), then the networks are presented with the first part of the training trajectories and asked to complete them. The values *condition_directories* and *test_hyp_priors* have to be adjusted to decide which parameter condition to use.
 
-condition_directories and test_hyp_priors values have to be adjusted to decide which H_train and H_test condition to use.
+Results are stored in a folder in *results/completion/* determined by *data_set_name* variable, using the following structure
+*results/completion/[data_set_name]/[training run]/[training parameter]/[inference method]/test-[testing parameter]*
+For *inference* as inference method, the subfolder *inference_networks* contains the inference results (networks with updated initial states) for this network.
 
-Results are stored in a folder in results/completion/ determined by data_set_name variable, using the following structure
-results/completion/[data_set_name]/[training run]/[training parameter]/[inference method]/test-[testing parameter]
-For "inference" as inference method, the subfolder inference_networks contains the inference results (networks with updated initial states) of the X performed inferences for this network.
+#### 4. Evaluation ####
 
-4. Evaluation
+**run_evaluation_training.py:**
+Evaluation of trained networks. Results are stored in the corresponding folder in *results/training/*.
 
-run_evaluation_training.py:
-Evaluation of trained networks. Results are stored in the corresponding folder in results/training/
-
-run_evaluation.py
+**run_evaluation.py**
 Evaluation of the performance of the network for completing the trajectories.
-(By default, evaluation for hyp_train == hyp_test, stored to inference-corresponding.)
+(By default, evaluation is done assuming that the same value of H is used for training and testing, results are stored in the *evaluation* folder as *inference-corresponding*.)
 
-run_evaluation_representation.py
-Evaluation of the internal representations of the networks for completing the trajectories.
-(Performed individually for each hyp parameter value, stored to inference-1 etc.)
+**run_evaluation_representation.py**
+Evaluation of the internal representations of the networks for completing the trajectories. This evaluation is performed individually for each H parameter value, and stored in the *evaluation* folder as *inference-1* etc.
 
-* Other source code files:
+**run_evaluation_attractors.py**
+Completion is performed using initial states linearly interpolated between the trained initial states. Results are stored in the *evaluation* directory, in a subfolder determined via the *plot_dir* variable.
 
-nets.py: the neural network model implementation
+#### Other source code files ####
 
-inference.py and drawing_completion_functions.py: completion implementation
+**nets.py:**
+The implementation of the recurrent neural network with Bayesian inference.
 
-utils/visualization.py: plotting code
+**inference.py** and **drawing_completion_functions.py:**
+Implementation of the completion of trajectories via backpropagation.
 
-utils/normalize.py: code for normalizing data dimension-wise
+**utils/visualization.py:**
+Code for plotting the trajectories.
 
-utils/distance_measures.py: dtw call
+**utils/normalize.py:**
+Code for normalizing the trajectory data dimension-wise.
+
+**utils/distance_measures.py:**
+Measuring distance between trajectories via Dynamic Time Warping.
+
+**error_statistics_analysis.R**
+R script for testing statistical significances of the error differences in different H conditions.
 

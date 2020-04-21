@@ -11,18 +11,23 @@ from utils.distance_measures import distance_measure
 reduced_time_steps = 30
 add_BI_variance = True
 num_classes = 6
-num_runs = 10
+# which of the training networks should be used
+evaluate_runs = np.arange(10)
 
 # indices of which pattern should be interpolated with which other pattern
-indices_pattern1 = [2]
-indices_pattern2 = np.arange(6) #[1]
+indices_pattern1 = [1]
+indices_pattern2 = np.arange(num_classes)
+num_comparison_patterns = np.min([num_classes-1, len(indices_pattern2)])
 
 # which training parameter conditions to check
-condition_directories = ['0.001', '1', '10']
+condition_directories = ['0.001', '1', '100']
 # which hyp_prior condition to use for testing:
-test_hyp_priors =  [0.001, 1, 10]
+test_hyp_priors =  [0.001, 1, 100]
 
-data_set_name = 'final_0.01-100_6x7' #'training-2020-02-test-set'
+# which value for σ2_sensor should be assumed if no external input is available (affects amount of randomness of drawing in hypo-prior condition)
+high_sensory_variance = 50
+
+data_set_name = 'final_0.01-100_6x7'
 
 # where to find the training networks
 head_directory = "./results"
@@ -30,7 +35,7 @@ head_directory = "./results"
 training_dir = os.path.join(head_directory, "training/"+data_set_name)
 eval_dir = os.path.join(head_directory, "evaluation/"+data_set_name)
 
-plot_dir = os.path.join(eval_dir, "attractors-dtw-car")
+plot_dir = os.path.join(eval_dir, "attractors-dtw-house")
 pathlib.Path(plot_dir).mkdir(parents=True, exist_ok=True)
 
 interps = np.arange(10,-1, -1)/10
@@ -45,17 +50,16 @@ else:
     print("Use CPU!")
     gpu_id = -1
 
-training_data_file = "data_generation/drawing-data-sets/drawings-191105-6-drawings.npy"
-training_data_file_classes = "data_generation/drawing-data-sets/drawings-191105-6-drawings-classes.npy"
+training_data_file = "data_generation/drawing-data-sets/drawings-191105-6x3-test.npy"
+training_data_file_classes = "data_generation/drawing-data-sets/drawings-191105-6x3-test-classes.npy"
+
 x_train = np.float32(np.load(training_data_file))
 if gpu_id >= 0:
     x_train = cuda.to_gpu(x_train)
-# else:
-#     x_train = cuda.to_cpu(x_train)
-
 
 # for the different runs
 run_directories = next(os.walk(training_dir))[1]
+
 for current_c in range(len(condition_directories)):
 
     try:
@@ -112,7 +116,6 @@ for current_c in range(len(condition_directories)):
                         # interpolated initial state
                         interpol_is = j * is_1 + (1-j) * is_2
 
-
                         # use this interpolated IS to generate pattern 1
 
                         # corresponding training trajectory
@@ -121,7 +124,7 @@ for current_c in range(len(condition_directories)):
                         # generate the trajectory using the corresponding training_hyprun
                         plottingFile = os.path.join(plot_dir, 'pattern-1_hyp-' + str(test_hyp_priors[current_c]) + '_run-' + str(current_r) + '_interp-' + str(np.around(j,2)) + '_attractors_' + str(i_1) + '-' + str(i_2) +  '_')
 
-                        init_state, res, results_path, u_h_history = complete_drawing(model, params, input_traj, reduced_time_steps, is_selection_mode = np.tile(interpol_is,(num_classes,1)), hyp_prior = test_hyp_priors[current_c], x_start = None, plottingFile = plottingFile, add_BI_variance = add_BI_variance, gpu_id=-1)
+                        init_state, res, results_path, u_h_history = complete_drawing(model, params, input_traj, reduced_time_steps, is_selection_mode = np.tile(interpol_is,(num_classes,1)), hyp_prior = test_hyp_priors[current_c], high_sensory_variance = high_sensory_variance, x_start = None, add_BI_variance = add_BI_variance, gpu_id=-1)
 
                         # calculate error of the generated shape to the intended shape
                         # visible part (error to pattern 1)
@@ -142,7 +145,7 @@ for current_c in range(len(condition_directories)):
                         # generate the trajectory using the corresponding training_hyprun
                         plottingFile = os.path.join(plot_dir, 'pattern-2_hyp-' + str(test_hyp_priors[current_c]) + '_run-' + str(current_r) + '_interp-' + str(np.around(j,2)) + '_attractors_' + str(i_1) + '-' + str(i_2) +  '_')
 
-                        init_state, res, results_path, u_h_history = complete_drawing(model, params, input_traj, reduced_time_steps, is_selection_mode = np.tile(interpol_is,(num_classes,1)), hyp_prior = test_hyp_priors[current_c], x_start = None, plottingFile = plottingFile, add_BI_variance = add_BI_variance, gpu_id=-1)
+                        init_state, res, results_path, u_h_history = complete_drawing(model, params, input_traj, reduced_time_steps, is_selection_mode = np.tile(interpol_is,(num_classes,1)), hyp_prior = test_hyp_priors[current_c], x_start = None, add_BI_variance = add_BI_variance, gpu_id=-1)
 
                         # visible part (error to pattern 2)
                         cl = i_2 #range(num_classes):
@@ -163,11 +166,14 @@ for current_c in range(len(condition_directories)):
 # for now, all classes are condensed
 colors = ['blue', 'red', 'green', 'yellow', 'orange']
 
-fig = plt.figure('New_best', figsize=(35.0, 12.0))
+fig = plt.figure('New_best', figsize=(35.0, 22.0))
 plt.rcParams.update({'font.size': 20, 'legend.fontsize': 20})
-ax1 = fig.add_subplot(131) # visible part
-ax2 = fig.add_subplot(132) # new part
-ax3 = fig.add_subplot(133) # new part
+ax1 = fig.add_subplot(231) # individual patterns
+ax2 = fig.add_subplot(232)
+ax3 = fig.add_subplot(233)
+ax4 = fig.add_subplot(234) # average
+ax5 = fig.add_subplot(235)
+ax6 = fig.add_subplot(236)
 
 # load parameter condition
 c=0
@@ -177,17 +183,20 @@ for current_c in condition_directories:
     attractor_distance_vis_error_results_2 = np.load(os.path.join(plot_dir, 'hyp-' + current_c + '_attractor-dist-visible-2.npy'))
     attractor_distance_new_error_results_2 = np.load(os.path.join(plot_dir, 'hyp-' + current_c + '_attractor-dist-new-2.npy'))
 
+    assert(len(run_directories) >= len(evaluate_runs))
     
     # all "other" patterns compared to pattern 0, plotting patterns individually
-
-    collect_over_patterns_1 = np.zeros((num_classes-1, len(interps), num_runs))
-    for r in range(num_runs):
-        all_error_trajs = np.concatenate(attractor_distance_new_error_results_1[r]).reshape((len(interps),-1))[:,0:num_classes-1]
-        for pat in range(num_classes-1):
-            collect_over_patterns_1[pat][:,r] = all_error_trajs[:,pat]
-    for pat in range(num_classes-1):
-        meanpat = np.mean(collect_over_patterns_1[pat], axis=1)
-        stdpat = np.std(collect_over_patterns_1[pat], axis=1)
+    collect_over_patterns_1 = np.zeros((num_comparison_patterns, len(interps), len(evaluate_runs)))
+    collect_over_patterns_vis_1 = np.zeros((num_comparison_patterns, len(interps), len(evaluate_runs)))
+    for r in evaluate_runs:
+        all_error_trajs = np.concatenate(attractor_distance_new_error_results_1[r]).reshape((len(interps),-1))[:,0:num_comparison_patterns]
+        all_error_trajs_vis = np.concatenate(attractor_distance_vis_error_results_1[r]).reshape((len(interps),-1))[:,0:num_comparison_patterns]
+        for pat in range(num_comparison_patterns):
+            collect_over_patterns_1[pat][:,evaluate_runs.index(r)] = all_error_trajs[:,pat]
+            collect_over_patterns_vis_1[pat][:,evaluate_runs.index(r)] = all_error_trajs_vis[:,pat]
+    for pat in range(num_comparison_patterns):
+        meanpat = np.mean(collect_over_patterns_1[pat]+collect_over_patterns_vis_1[pat], axis=1)
+        stdpat = np.std(collect_over_patterns_1[pat]+collect_over_patterns_vis_1[pat], axis=1)
         if c==0:
             ax1.errorbar(interps, meanpat, stdpat, color=colors[pat])#, label=str(current_c) + " (1)")
         if c==1:
@@ -195,14 +204,17 @@ for current_c in condition_directories:
         if c==2:
             ax3.errorbar(interps, meanpat, stdpat, color=colors[pat])#, label=str(current_c) + " (1)")
 
-    collect_over_patterns_2 = np.zeros((num_classes-1, len(interps), num_runs))
-    for r in range(num_runs):
-        all_error_trajs = np.concatenate(attractor_distance_new_error_results_2[r]).reshape((len(interps),-1))[:,0:num_classes-1]
-        for pat in range(num_classes-1):
-            collect_over_patterns_2[pat][:,r] = all_error_trajs[:,pat]
-    for pat in range(num_classes-1):
-        meanpat = np.mean(collect_over_patterns_2[pat], axis=1)
-        stdpat = np.std(collect_over_patterns_2[pat], axis=1)
+    collect_over_patterns_2 = np.zeros((num_comparison_patterns, len(interps), len(evaluate_runs)))
+    collect_over_patterns_vis_2 = np.zeros((num_comparison_patterns, len(interps), len(evaluate_runs)))
+    for r in evaluate_runs:
+        all_error_trajs = np.concatenate(attractor_distance_new_error_results_2[r]).reshape((len(interps),-1))[:,0:num_comparison_patterns]
+        all_error_trajs_vis = np.concatenate(attractor_distance_vis_error_results_2[r]).reshape((len(interps),-1))[:,0:num_comparison_patterns]
+        for pat in range(num_comparison_patterns):
+            collect_over_patterns_2[pat][:,evaluate_runs.index(r)] = all_error_trajs[:,pat]
+            collect_over_patterns_vis_2[pat][:,evaluate_runs.index(r)] = all_error_trajs_vis[:,pat]
+    for pat in range(num_comparison_patterns):
+        meanpat = np.mean(collect_over_patterns_2[pat]+collect_over_patterns_vis_2[pat], axis=1)
+        stdpat = np.std(collect_over_patterns_2[pat]+collect_over_patterns_vis_2[pat], axis=1)
         if c==0:
             ebplot = ax1.errorbar(interps, meanpat, stdpat, color=colors[pat])#, label=str(current_c) + " (1)")
             ebplot[-1][0].set_linestyle('--')
@@ -214,147 +226,99 @@ for current_c in condition_directories:
             ebplot[-1][0].set_linestyle('--')
 
 
-    with open(os.path.join("indiv-pattern-1_" + current_c + ".txt"), 'w') as f:
+
+    with open(os.path.join(plot_dir, "indiv-pattern-1_" + current_c + ".txt"), 'w') as f:
         f.write("ip\tmeanp1\tstdp1\tmeanp2\tstdp2\tmeanp3\tstdp3\tmeanp4\tstdp4\tmeanp5\tstdp5\n")
         for ip in range(len(interps)):
             f.write(str(ip/10) + "\t")
-            for pat in range(num_classes-1):
-                f.write(str(np.mean(collect_over_patterns_1[pat], axis=1)[ip]) + "\t" + str(np.std(collect_over_patterns_1[pat], axis=1)[ip]) + "\t")
+            for pat in range(num_comparison_patterns):
+                f.write(str(np.mean(collect_over_patterns_1[pat]+collect_over_patterns_vis_1[pat], axis=1)[ip]) + "\t" + str(np.std(collect_over_patterns_1[pat]+collect_over_patterns_vis_1[pat], axis=1)[ip]) + "\t")
             f.write("\n")
 
     with open(os.path.join(plot_dir, "indiv-pattern-2_" + current_c + ".txt"), 'w') as f:
         f.write("ip\tmeanp1\tstdp1\tmeanp2\tstdp2\tmeanp3\tstdp3\tmeanp4\tstdp4\tmeanp5\tstdp5\n")
         for ip in range(len(interps)):
             f.write(str(ip/10) + "\t")            
-            for pat in range(num_classes-1):
-                f.write(str(np.mean(collect_over_patterns_2[pat], axis=1)[ip]) + "\t" + str(np.std(collect_over_patterns_2[pat], axis=1)[ip]) + "\t")
+            for pat in range(num_comparison_patterns):
+                f.write(str(np.mean(collect_over_patterns_2[pat]+collect_over_patterns_vis_2[pat], axis=1)[ip]) + "\t" + str(np.std(collect_over_patterns_2[pat]+collect_over_patterns_vis_2[pat], axis=1)[ip]) + "\t")
             f.write("\n")
 
-    """
-    
     # "other" patterns compared to pattern 0, averaging over all patterns
 
-    collect_over_patterns = np.zeros((num_classes-1, len(interps), num_runs))
-    for r in range(5):
-        all_error_trajs = np.concatenate(attractor_distance_new_error_results_1[r]).reshape((len(interps),-1))[:,0:num_classes-1]
-        for pat in range(num_classes-1):
-            collect_over_patterns[pat][:,r] = all_error_trajs[:,pat]
-
+    collect_over_patterns = np.zeros((num_comparison_patterns, len(interps), len(evaluate_runs)))
+    collect_over_patterns_vis = np.zeros((num_comparison_patterns, len(interps), len(evaluate_runs)))
+    for r in evaluate_runs:
+        all_error_trajs = np.concatenate(attractor_distance_new_error_results_1[r]).reshape((len(interps),-1))[:,0:num_comparison_patterns]
+        all_error_trajs_vis = np.concatenate(attractor_distance_vis_error_results_1[r]).reshape((len(interps),-1))[:,0:num_comparison_patterns]
+        for pat in range(num_comparison_patterns):
+            collect_over_patterns[pat][:,evaluate_runs.index(r)] = all_error_trajs[:,pat]
+            collect_over_patterns_vis[pat][:,evaluate_runs.index(r)] = all_error_trajs_vis[:,pat]
     mean_error_per_ip_1 = np.zeros((len(interps),))
     std_error_per_ip_1 = np.zeros((len(interps),))
     for ip in range(len(interps)):
         all_errors = [x[ip,:] for x in collect_over_patterns]
-        mean_error_per_ip_1[ip] = np.mean(all_errors)
-        std_error_per_ip_1[ip] = np.std(all_errors)
+        all_errors_vis = [x[ip,:] for x in collect_over_patterns_vis] 
+        mean_error_per_ip_1[ip] = np.mean(all_errors+all_errors_vis)
+        std_error_per_ip_1[ip] = np.std(all_errors+all_errors_vis)
 
     if c==0:
-        ax1.errorbar(interps, mean_error_per_ip_1, std_error_per_ip_1, color=colors[0])
+        ax4.errorbar(interps, mean_error_per_ip_1, std_error_per_ip_1**2, color=colors[0])
     if c==1:
-        ax2.errorbar(interps, mean_error_per_ip_1, std_error_per_ip_1, color=colors[0])
+        ax5.errorbar(interps, mean_error_per_ip_1, std_error_per_ip_1**2, color=colors[0])
     if c==2:
-        ax3.errorbar(interps, mean_error_per_ip_1, std_error_per_ip_1, color=colors[0])
+        ax6.errorbar(interps, mean_error_per_ip_1, std_error_per_ip_1**2, color=colors[0])
 
-    collect_over_patterns = np.zeros((num_classes-1, len(interps), num_runs))
-    for r in range(5):
-        all_error_trajs = np.concatenate(attractor_distance_new_error_results_2[r]).reshape((len(interps),-1))[:,0:num_classes-1]
-        for pat in range(num_classes-1):
-            collect_over_patterns[pat][:,r] = all_error_trajs[:,pat]
+    collect_over_patterns = np.zeros((num_comparison_patterns, len(interps), len(evaluate_runs)))
+    collect_over_patterns_vis = np.zeros((num_comparison_patterns, len(interps), len(evaluate_runs)))
+    for r in evaluate_runs:
+        all_error_trajs = np.concatenate(attractor_distance_new_error_results_2[r]).reshape((len(interps),-1))[:,0:num_comparison_patterns]
+        all_error_trajs_vis = np.concatenate(attractor_distance_vis_error_results_2[r]).reshape((len(interps),-1))[:,0:num_comparison_patterns]
+        for pat in range(num_comparison_patterns):
+            collect_over_patterns[pat][:,evaluate_runs.index(r)] = all_error_trajs[:,pat]
+            collect_over_patterns_vis[pat][:,evaluate_runs.index(r)] = all_error_trajs_vis[:,pat]
 
     mean_error_per_ip_2 = np.zeros((len(interps),))
     std_error_per_ip_2 = np.zeros((len(interps),))
     for ip in range(len(interps)):
         all_errors = [x[ip,:] for x in collect_over_patterns]
-        mean_error_per_ip_2[ip] = np.mean(all_errors)
-        std_error_per_ip_2[ip] = np.std(all_errors)
+        all_errors_vis = [x[ip,:] for x in collect_over_patterns_vis] 
+        mean_error_per_ip_2[ip] = np.mean(all_errors+all_errors_vis)
+        std_error_per_ip_2[ip] = np.std(all_errors+all_errors_vis)
 
     if c==0:
-        ax1.errorbar(interps, mean_error_per_ip_2, std_error_per_ip_2, color=colors[1])
+        ax4.errorbar(interps, mean_error_per_ip_2, std_error_per_ip_2**2, color=colors[1])
     if c==1:
-        ax2.errorbar(interps, mean_error_per_ip_2, std_error_per_ip_2, color=colors[1])
+        ax5.errorbar(interps, mean_error_per_ip_2, std_error_per_ip_2**2, color=colors[1])
     if c==2:
-        ax3.errorbar(interps, mean_error_per_ip_2, std_error_per_ip_2, color=colors[1])
-
-    with open("error-1_" + current_c + ".txt", 'w') as f:
+        ax6.errorbar(interps, mean_error_per_ip_2, std_error_per_ip_2**2, color=colors[1])
+    
+    
+    with open(os.path.join(plot_dir, "error-1_" + current_c + ".txt"), 'w') as f:
         f.write("ip\tmean\tstd\n")
         for ip in range(len(interps)):
             f.write(str(ip) + "\t" + str(mean_error_per_ip_1[ip]) + "\t" + str(std_error_per_ip_1[ip]) + "\n")
-    with open("error-2_" + current_c + ".txt", 'w') as f:
+    with open(os.path.join(plot_dir, "error-2_" + current_c + ".txt"), 'w') as f:
         f.write("ip\tmean\tstd\n")
         for ip in range(len(interps)):
             f.write(str(ip) + "\t" + str(mean_error_per_ip_2[ip]) + "\t" + str(std_error_per_ip_2[ip]) + "\n")
 
-    """
-
     c += 1
 
 
+max_lim = 0.3
 ax1.set_xlabel("interpolation factor (1: face, 0: other class)")
 ax2.set_xlabel("interpolation factor (1: face, 0: other class)")
 ax3.set_xlabel("interpolation factor (1: face, 0: other class)")
 ax1.set_ylabel("Hyper-prior (0.001)")
 ax2.set_ylabel("Normal prior (1)")
 ax3.set_ylabel("Hypo-prior (1000)")
-ax1.set_ylim([0, 0.2])
-ax2.set_ylim([0, 0.2])
-ax3.set_ylim([0, 0.4])
-plt.savefig(os.path.join(plot_dir, 'final.pdf'))#(os.path.join(eval_dir, '../bla.png'))
+ax1.set_ylim([0, max_lim])
+ax2.set_ylim([0, max_lim])
+ax3.set_ylim([0, max_lim])
+ax4.set_ylim([0, 0.1])
+ax5.set_ylim([0, 0.1])
+ax6.set_ylim([0, 0.1])
+plt.savefig(os.path.join(plot_dir, 'final.pdf'))
 plt.close()
-
-
-
-
-
-
-"""
-# mean over all pattern1-pattern2 combinations
-over_all_vis_mean_1 = np.zeros((len(interps),))
-over_all_vis_std_1 = np.zeros((len(interps),))
-over_all_vis_mean_2 = np.zeros((len(interps),))
-over_all_vis_std_2 = np.zeros((len(interps),))
-for ip in range(len(interps)):
-    over_all_vis_mean_1[ip] = np.mean(np.concatenate([x[ip] for x in attractor_distance_vis_error_results_1]))
-    over_all_vis_std_1[ip] = np.std(np.concatenate([x[ip] for x in attractor_distance_vis_error_results_1]))
-    over_all_vis_mean_2[ip] = np.mean(np.concatenate([x[ip] for x in attractor_distance_vis_error_results_2]))
-    over_all_vis_std_2[ip] = np.std(np.concatenate([x[ip] for x in attractor_distance_vis_error_results_2]))
-
-ax1.errorbar(interps, over_all_vis_mean_2, yerr = over_all_vis_std_2, color=colors[c], label=str(current_c) + " (1)")
-ebplot = ax1.errorbar(interps, over_all_vis_mean_1, yerr = over_all_vis_std_1, color=colors[c], label=str(current_c) + " (2)")
-ebplot[-1][0].set_linestyle('-')
-
-over_all_new_mean_1 = np.zeros((len(interps),))
-over_all_new_std_1 = np.zeros((len(interps),))
-over_all_new_mean_2 = np.zeros((len(interps),))
-over_all_new_std_2 = np.zeros((len(interps),))
-for ip in range(len(interps)):
-    over_all_new_mean_1[ip] = np.mean(np.concatenate([x[ip] for x in attractor_distance_new_error_results_1]))
-    over_all_new_std_1[ip] = np.std(np.concatenate([x[ip] for x in attractor_distance_new_error_results_1]))
-    over_all_new_mean_2[ip] = np.mean(np.concatenate([x[ip] for x in attractor_distance_new_error_results_2]))
-    over_all_new_std_2[ip] = np.std(np.concatenate([x[ip] for x in attractor_distance_new_error_results_2]))
-
-ax2.errorbar(interps, over_all_new_mean_2, yerr = over_all_new_std_2, color=colors[c], label=str(current_c) + " (1)")
-ebplot = ax2.errorbar(interps, over_all_new_mean_1, yerr = over_all_new_std_1, color=colors[c], linestyle='-', label=str(current_c) + " (2)")
-ebplot[-1][0].set_linestyle('-')
-
-c += 1
-"""
-
-
-# for r in range(attractor_distance_vis_error_results.shape[0]):
-#     ax.errorbar(interps, [np.mean(x) for x in attractor_distance_vis_error_results[r]], yerr=[np.var(x) for x in attractor_distance_vis_error_results[r]])
-# ax.set_ylim([0, 0.05])
-# plt.savefig(os.path.join(eval_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_visible.pdf'))
-# plt.close()
-#
-# fig = plt.figure()
-# ax = fig.add_subplot(111)
-# # plot all runs in the same plot
-# for r in range(attractor_distance_new_error_results.shape[0]):
-#     ax.errorbar(interps, [np.mean(x) for x in attractor_distance_new_error_results[r]], yerr=[np.var(x) for x in attractor_distance_new_error_results[r]])
-# ax.set_ylim([0, 0.05])
-# plt.savefig(os.path.join(eval_dir, 'hyp-' + str(test_hyp_priors[current_c]) + '_new-part.pdf'))
-# plt.close()
-
-# collapsed over all runs:
-
 
 

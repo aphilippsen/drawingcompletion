@@ -14,15 +14,14 @@ import numpy as np
 from matplotlib import pyplot as plt
 import pickle
 
-# RECURRENT NEURAL NETWORK DEFINITIONS
-
 # Stochastic Continuous-Time Recurrent Neural Network
 
 class SCTRNN(chainer.Chain):
     def __init__(self, num_io, num_context, tau_context, num_classes, init_state_init = None, init_state_learning = True, weights_learning = True, bias_learning = True, tau_learning = False, aberrant_sensory_precision = 0, hyp_prior = 1, external_signal_variance = None, pretrained_model = None):
         """
-        Creates a S-CTRNN with input/output layer size num_io, and context layer
-        size num_context.
+        Implements the Stochastic Continuous-Time Recurrent Neural Network
+        num_io: Number of input and output neurons
+        num_context: Number of recurrent layer neurons
         tau_context: Time scale (initialization) (if large: slow update;
                     if small: fast update of context neuron activations)
         num_classes: Number of different attractors that the network can
@@ -31,18 +30,20 @@ class SCTRNN(chainer.Chain):
                     states; must be of size (num_classes x num_context). If None
                     initialized with zeros.
         init_state_learning (True): if True initial states are updated during
-                    optimization, if False they are fixed to the initial values
+                    optimization, if False they are fixed to the given initial values.
+        weights_learning (True): Whether to update weights.
+        bias_learning (True): Whether to update the bias values while learning.
         tau_learning (False): if True, the tau factor is updated during
                     optimization, if False tau is fixed
-        pretrained_model (None): If given, initial states and network weights
-                    are copied from the other (previously trained) SCTRNN instance.
-        aberrant_sensory_precision (0): If != 0, the network under- or overestimates
-                    its estimated variance during training
-
-
+        hyp_prior (1): Increases (hyp_prior < 1) or decreases (hyp_prior > 1) the reliance
+                    on the networks own prediction during learning. Parameter H.
         external_signal_variance (None): If (None), external signal variance is set
                     identical to the estimated variance, otherwise to fixed value (per
                     dimension)
+        aberrant_sensory_precision (0): If != 0, the network under- or overestimates
+                    its estimated variance during training.
+        pretrained_model (None): If given, initial states and network weights
+                    are copied from the other (previously trained) SCTRNN instance.
         """
         super(SCTRNN, self).__init__()
 
@@ -234,7 +235,7 @@ class SCTRNN(chainer.Chain):
             else:
                 input_var = chainer.Variable(xp.tile(xp.asarray(xp.float32([self.external_signal_variance])), (x.shape[0],x.shape[1])))
 
-            # Bayesian inference
+            ### Bayesian inference ###
 
             # standard deviation of BI signal
             sigma_BI = xp.sqrt(xp.divide(xp.multiply(input_var.array, pred_var.array), (input_var.array + pred_var.array)))
@@ -286,24 +287,27 @@ class SCTRNN(chainer.Chain):
         Args:
             init_states: A numpy array of initial state for initializing the network activations
             num_steps: Integer number of steps to generate
-            external_input: A numpy array of external input signals for each initial state. if ``None``, external_contrib = 0 is set.
+            external_input: A numpy array of external input signals for each initial state.
                 One input signal per initial state should be provided. If there are more input signals than initial states, it
                 should be a multiple of the initial states, then the initial states array gets copied to match the length of ``external_input``.
-            add_variance_to_output: Float value, indicating the amount of noise (as standard deviation of a Gaussian distribution) added to the
+            add_variance_to_output (None): Float value, indicating the amount of noise (as standard deviation of a Gaussian distribution) added to the
                 network estimated average in each time step. If None, the variance estimated by the network itself is added to the
                 trajectory, so to generate the network average without disturbance, it has to be set to 0 explicitly.
-            additional_output: if 'none', no effect, if 'activations', the history of the context layer activations is additionally returned.
+            additional_output ('none'): if set to 'activations', the history of the context layer activations is additionally returned.
+            external_signal_variance: Define the sensory noise of the environment used for Bayesian inference. If None, input and prediction variance are set the same, if -1, model.external_signal_variance is used.
+            add_BI_variance (True): Whether to [True] sample from the resulting distribution of the BI (or [False] just take the mean).
+            hyp_prior (None): Which value of parameter H to use to determine reliance on predictions vs. reliance on input. None: Same value as for training is used.
+            x_start (None): If given, the generated trajectory will start from this value, instead of from 0.
 
         Returns:
-            The generated output trajectory.
-            The estimated variance of the output trajectory.
-            The history of context layer activations during trajectory generation (only if ``additional_output`` == 'activations')
-            The prediction error (only if ``external_input`` is set).
-            The variance-scaled prediction error (only if ``external_input`` is set).
+            results: The generated output trajectory.
+            resultsv: The estimated variance for the output trajectory.
+            resultsm: The estimated mean of the trajectory (is equal to results if add_variance_to_output==0).
+            pred_error: The prediction error (only if ``external_input`` is set).
+            weighted_pred_error: The variance-scaled prediction error (only if ``external_input`` is set).            
+            u_h_history: The history of context layer activations during trajectory generation (only if ``additional_output`` == 'activations').
+            resultspos: The posteriors of the Bayesian inference.
         """
-
-        # external_input = np.float32(np.zeros((1,270)))
-        # external_input = None
 
         xp = cuda.get_array_module(self.initial_states.W)
 
@@ -586,11 +590,8 @@ def make_initial_state_random(batch_size, n_hidden):
     return np.array(np.random.uniform(-1,1,(batch_size, n_hidden)),dtype=np.float32)
 
 
+# save networks
 
-# store
-
-# saveDir = "results/"+time.asctime(time.localtime(time.time()))+"/"
-# pathlib.Path(saveDir).mkdir(parents=True, exist_ok=True)
 def save_network(dir_name, params = None, model = None, model_filename = "network"):
     if not params is None:
         with open(os.path.join(dir_name,"parameters.txt"),'a') as f:

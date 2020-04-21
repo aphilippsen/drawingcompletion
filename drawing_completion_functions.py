@@ -5,12 +5,26 @@ from utils.visualization import plot_multistroke
 
 xp = np
 
-def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection_mode = 'best', x_start = None, hyp_prior = None, plottingFile = None, add_BI_variance = True, inference_epochs = 2000, inference_network_path = '', inference_network_old = False, gpu_id = 0):
+def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection_mode = 'best', x_start = None, hyp_prior = None,  high_sensory_variance = 50, plottingFile = None, add_BI_variance = True, inference_epochs = 2000, inference_network_path = '', gpu_id = 0):
     """
-        - is_selection_mode: 'best' for using best initial state, 'inference' for inferring the initial state from the input_traj
-        - inference_epochs: how much epochs to perform for inference
-        - inference_network_path: if is_selection_mode=='inference', but no new inference should be performed, instead an existing network file should be used
-        - inference_network_old: True if the network was trained before April 5 2019 and uses the old hyp_prior definition (+1 is added)
+        - model: The trained SCTRNN model
+        - param: Parameters of the model
+        - input_traj: The given input trajectory for completion
+        - reduced_time_steps: Number of time steps which should be visible to the network, input_traj will be accordingly preprocessed
+        - is_selection_mode:
+            'best' for using best initial state
+            'inference' for inferring the initial state from the input_traj
+            'mean' for using the mean of all training initial states
+            'zero' for using zero initial states
+            matrix (num_patterns x num_neurons): set the given values as initial states
+
+        - x_start (optional): starting point for trajectory generation, otherwise set to 0
+        - hyp_prior (optional): Prior parameter to be used for completion if given, otherwise inferred from model
+        - high_sensory_variance (optional): which value for σ2_sensor should be assumed if no external input is available (affects amount of randomness of drawing in hypo-prior condition)
+        - plottingFile (optional): whether to plot the generated trajectory, default False
+        - add_BI_variance (optional): whether in each time step during generation noise with the amplitude of the estimated variance should be added to the trajectory
+        - inference_epochs (optional): how much epochs to perform for inference, default 2000
+        - inference_network_path (optional): define this if is_selection_mode=='inference' is set, but no new inference should be performed, instead an existing network file should be used
 
 
     """
@@ -23,7 +37,7 @@ def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection
 
     external_signal_var_testing = np.tile(model.external_signal_variance, (time_steps,))
     # after the initial time steps, external input becomes unavailable=unreliable!
-    external_signal_var_testing[reduced_time_steps:] = 50
+    external_signal_var_testing[reduced_time_steps:] = high_sensory_variance
 
 
     # use input only until ... time steps
@@ -61,8 +75,6 @@ def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection
         else:
             # load network that has the inference results
             params, inf_model = load_network(inference_network_path, network_type = 'SCTRNN', model_filename="network-final.npz")
-            if inference_network_old:
-                inf_model.hyp_prior += 1 # this is an old model!
             if gpu_id >= 0:
                 inf_model.to_gpu()
             init_state = inf_model.initial_states.W.array

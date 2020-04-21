@@ -73,7 +73,7 @@ if reuse_existing_weights:
     assert(init_weight_dir) # init_weight_dir has to be set with
 
 # which variance to set for the input in the Bayesian inference in case of imprecise perception (~ no input), any high value (at least 1) is fine
-ext_var_proactive = 100
+ext_var_proactive = 50 # TODO: oops this was set to 100 but only affects the training errors I'm using...
 
 runs = len(hyp_prior_runs)
 
