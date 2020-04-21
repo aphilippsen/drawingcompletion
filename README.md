@@ -25,6 +25,7 @@ The following packages are required (install e.g. via pip):
 * matplotlib
 * numpy
 * scikit-learn
+* pandas
 * dtw
 
 ### How to run ###

@@ -44,7 +44,7 @@ else:
    print("Use CPU!")
    gpu_id = -1
 
-# TODO name for the folders to store the results
+# name for the folders to store the results
 data_set_name = "final_0.01-100_6x7"
 
 # which training data files to use
@@ -73,7 +73,7 @@ if reuse_existing_weights:
     assert(init_weight_dir) # init_weight_dir has to be set with
 
 # which variance to set for the input in the Bayesian inference in case of imprecise perception (~ no input), any high value (at least 1) is fine
-ext_var_proactive = 50 # TODO: oops this was set to 100 but only affects the training errors I'm using...
+ext_var_proactive = 50
 
 runs = len(hyp_prior_runs)
 
@@ -155,14 +155,6 @@ for r in range(runs):
     batch_size = num_samples_per_class * num_classes
 
     plot_results(x_train[0:num_classes], num_timesteps, os.path.join(final_save_dir, 'target_trajectories.png'), num_io,twoDim=True)
-
-    ####################################################################################
-    # batch_size, num_classes, x_train_orig, classes_train and noise_variances should be set #
-    ####################################################################################
-
-    #################################################
-    # x_train_orig => data normalization => x_train # => Not necessary here, because the drawings are already between [-1, 1]
-    #################################################
 
     # CREATE PARAMETER SETTING AND NETWORK MODEL
 
@@ -279,15 +271,11 @@ for r in range(runs):
            f.write("before learning: pattern generation error (reactive): " + str(history_generation_error_reactive[i]) + "\n")
     plot_results(results, num_timesteps, os.path.join(final_save_dir, "reactive_before-learning"), model.num_io, twoDim=True)
 
-
     for epoch in range(1, p.epochs + 1):
         epochStart = time.time()
 
         estimated_variance = np.zeros((num_timesteps,))
-
-        # permutate samples in each epoch so that they are randomly ordered
-        # x_train = create_lissajous_curves_murata_four_positions(num_classes, num_repetitions, num_timesteps, noise_variances, num_samples_per_class = num_samples_per_class, format = 'array')
-
+        
         x_train_orig = np.float32(np.load(training_data_file))
         x_train = np.copy(x_train_orig)
 
@@ -513,5 +501,4 @@ for r in range(runs):
     f.close()
 
     np.save(os.path.join(final_save_dir, "likelihood-per-epoch"), np.asarray(likelihood_per_epoch))
-
 
