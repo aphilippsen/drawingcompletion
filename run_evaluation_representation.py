@@ -1,5 +1,3 @@
-# do it first for the "best" completion: then I can be sure it is working as expected!
-
 import numpy as np
 import scipy
 import os
@@ -19,7 +17,7 @@ num_patterns = 6 # number of different training sample patterns
 
 training_data_file = "data_generation/drawing-data-sets/drawings-191105-6x3-test.npy"
 #data_set_name = 'example'
-data_set_name = "final_0.01-100_6x7_1" #"training-2020-02-test-set"
+data_set_name = "final_0.01-100_6x7" #"training-2020-02-test-set"
 #data_set_name = "2019-11-all-test-set"
 mode = 'inference'
 inf_epochs = np.concatenate((np.arange(1,2001,100), [2000]))
@@ -81,7 +79,9 @@ for training_hyp in training_hyp_all:
 
     dist_to_corresponding_training_is_all = np.empty((len(dir_list),),dtype=object)
     dist_between_training_is_all = np.empty((len(dir_list),),dtype=object)
-
+    between_dist = np.empty((len(test_hyp_all), len(dir_list)), dtype=object)
+    within_dist = np.empty((len(test_hyp_all), len(dir_list)), dtype=object)
+    
     for curr_r in range(len(dir_list)):
         current_run = os.path.join(eval_head_dir, dir_list[curr_r])
         print("Evaluate for " + str(current_run))
@@ -101,7 +101,7 @@ for training_hyp in training_hyp_all:
         uh_history = np.empty((len(test_hyp_all), 1), dtype=object)
         inferred_is = np.empty((len(test_hyp_all), 1), dtype=object)
         is_history = np.empty((len(test_hyp_all), 1), dtype=object)
-
+        
         test_hyp_idx = -1
         for test_hyp in test_hyp_all:
             test_hyp_idx += 1
@@ -118,11 +118,30 @@ for training_hyp in training_hyp_all:
 
             final_is = np.load(eval_dir + "/final-inferred-is-"+test_hyp+"_mode-"+mode+".npy")
 
+            # compute the similarity of the initial states inferred for different patterns            
+            between_dist[test_hyp_idx, curr_r] = []
+            within_dist[test_hyp_idx, curr_r] = []
+            for pat1 in range(num_patterns):
+                for pat2 in range(num_patterns):
+                    for inf1 in range(num_inferences):
+                        for inf2 in range(num_inferences):
+                            if inf1 == inf2:
+                                continue
+                            # get the mean distance to same-pattern IS
+                            if pat1 == pat2:
+                                within_dist[test_hyp_idx, curr_r].append(scipy.spatial.distance.euclidean(final_is[0][inf1][pat1], final_is[0][inf2][pat2]))
+                            # and get the mean distance to other-pattern IS
+                            else:
+                                between_dist[test_hyp_idx, curr_r].append(scipy.spatial.distance.euclidean(final_is[0][inf1][pat1], final_is[0][inf2][pat2]))
+            within_dist[test_hyp_idx, curr_r] = np.mean(within_dist[test_hyp_idx, curr_r])
+            between_dist[test_hyp_idx, curr_r] = np.mean(between_dist[test_hyp_idx, curr_r])
+
             # that's how the loaded uh should look like:
             #   uh[cl,red][inf].reshape((num_timesteps, num_neurons))
             # transfer info and do the reshape:
-            for i in range(uh.shape[0]): # for all pattern classes
-                for j in range(len(uh[i,0])): # for all inferences for this pattern
+            for i in range(num_patterns): # for all pattern classes
+
+                for j in range(num_inferences): # for all inferences for this pattern
                     uh_history[test_hyp_idx,0][j,i] = uh[i,0][j].reshape((num_timesteps, num_neurons))
                     inferred_is[test_hyp_idx,0][j,0] = final_is[0][j]
 
@@ -130,6 +149,7 @@ for training_hyp in training_hyp_all:
                     recogn_is = np.argmin(np.sqrt(np.sum((trained_is - np.tile(inferred_is[test_hyp_idx,0][j,0][i,:],(num_patterns,1)))**2,axis=1)))
                     if recogn_is == i:
                         correct_class[training_hyp_idx][i] += 1
+
 
             # get the trained initial states and the inferred initial states from all the ten inferences
             inf_nets_path = os.path.join(eval_dir, "inference_networks")
@@ -280,20 +300,20 @@ for training_hyp in training_hyp_all:
 
         colors = ['red', 'orange', 'green', 'blue', 'gray', 'black']
         pattern_category = ['FACE', 'HOUSE', 'CAR', 'FLOWER', 'HUMAN', 'ROCKET']
-        to_plot_indices = [0, 1, 3] # only subset of patterns to make plots clearer
+        to_plot_indices = [0, 1, 2,3,4,5] # only subset of patterns to make plots clearer
 
         # 2d
-        fig = plt.figure('Trained and inferred initial states (2d)', figsize=(10,10))
-        plt.rcParams.update({'font.size': 30, 'legend.fontsize': 30})
+        fig = plt.figure('Trained and inferred initial states (2d)', figsize=(20,20))
+        plt.rcParams.update({'font.size': 50, 'legend.fontsize': 30})
         ax = fig.add_subplot(111)
 
         for th in plotting_test_hyps:
             for i in to_plot_indices:
                 for j in range(num_inferences):
-                    ax.scatter(pca_inferred_is[th,0][j][0][i,0], pca_inferred_is[th,0][j][0][i,1], color=colors[i], marker='o',s=2000)
+                    ax.scatter(pca_inferred_is[th,0][j][0][i,0], pca_inferred_is[th,0][j][0][i,1], color=colors[i], marker='o',s=1000)
 
         for i in to_plot_indices:
-            ax.scatter(pca_trained_is[i,0], pca_trained_is[i,1], color=colors[i], marker='*',s=5000, label=pattern_category[i])
+            ax.scatter(pca_trained_is[i,0], pca_trained_is[i,1], color=colors[i], marker='*',s=3000, label=pattern_category[i])
 
         plt.legend()
         plt.savefig(os.path.join(result_dir, eval_setting + '_inferred-is-2d_run-' + dir_list[curr_r] + graphics_extension))
@@ -502,9 +522,6 @@ for training_hyp in training_hyp_all:
             # take the mean over variance of patterns to get the variance
             var_dist_reactive_per_timestep[curr_r*num_inferences*num_patterns:curr_r*num_inferences*num_patterns+num_inferences*num_patterns,t] = np.concatenate(dist_to_reactive_var).reshape((num_inferences*num_patterns,))
 
-
-
-
     np.save(os.path.join(result_dir, eval_setting + '_inner_dist_mean.npy'), mean_inner_dist_per_timestep)
     np.save(os.path.join(result_dir, eval_setting + '_inner_dist_var.npy'), var_inner_dist_per_timestep)
     np.save(os.path.join(result_dir, eval_setting + '_inner_dist_is_clusters.npy'), inner_distances_is_clusters)
@@ -525,6 +542,17 @@ for training_hyp in training_hyp_all:
     np.save(os.path.join(result_dir, eval_setting + '_dist_reactive_var.npy'), var_dist_reactive_per_timestep)
 
 
+    with open(os.path.join(result_dir, eval_setting + "_within_IS_dists_H-" + str(training_hyp) + ".txt"), 'w') as f:
+        f.write("h\tdist\n")
+        for i in range(len(dir_list)):
+            #for j in range(len(within_dist[test_hyp_idx,i])):
+                f.write(str(training_hyp) + "\t" + str(within_dist[test_hyp_idx,i]) + "\n")
+    with open(os.path.join(result_dir, eval_setting + "_between_IS_dists_H-" + str(training_hyp) + ".txt"), 'w') as f:
+        f.write("h\tdist\n")
+        for i in range(len(dir_list)):
+            #for j in range(len(between_dist[test_hyp_idx,i])):
+                f.write(str(training_hyp) + "\t" + str(between_dist[test_hyp_idx,i]) + "\n")
+                
     # mean distance score of within-class-differences of neuron activations per time step, averaged across all classes, for each network separately, and mean and variance among networks
     with open(os.path.join(result_dir, eval_setting + "_neuron-act-inner-distances-per-time_H-" + str(training_hyp) + ".txt"), 'w') as f:
         f.write("t\t")

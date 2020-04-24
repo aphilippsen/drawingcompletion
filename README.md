@@ -2,10 +2,13 @@
 
 ## Overview ##
 
-This code implements drawing completion as a trajectory learning task based on a recurrent neural network model which integrates sensory information with own predictions using Bayesian inference.
+This code implements the completion of representational drawings based on trajectory learning, using the predictive coding paradigm.
+As a model, stochastic continuous-time recurrent neural networks are combined with a Bayesian inference module which integrates sensory information with own predictions.
 The effect of strong or weak reliance on priors is investigated to evaluate potential cognitive mechanisms for differences in the drawing behavior between human children and chimpanzees.
 
-More details about the experiment and the scientific foundations can be found in the following paper:
+More details about the experiment and the scientific foundations can be found in the following papers:
+
+* Anja Philippsen and Yukie Nagai. "A predictive coding account for cognition in human children and chimpanzees: A case study of drawing." (under review)
 
 * Anja Philippsen and Yukie Nagai. "A predictive coding model of representational drawing in human children and chimpanzees." 2019 Joint IEEE 9th International Conference on Development and Learning and Epigenetic Robotics (ICDL-EpiRob). IEEE, 2019.
 

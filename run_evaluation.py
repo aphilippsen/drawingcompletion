@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pathlib
 
 #data_set_name = 'example'
-data_set_name = "final_0.01-100_6x7_high-sens"#"tmpComp1000"#-training-set" #"training-2020-02-new-completion" # "tmp"#"training-2020-03_noise0.01"#test-set"
+data_set_name = "final_0.01-100_6x7"#"tmpComp1000"#-training-set" #"training-2020-02-new-completion" # "tmp"#"training-2020-03_noise0.01"#test-set"
 #data_set_name = "2019-11-all-test-set"
 
 # Evaluation of the inference results
@@ -196,7 +196,7 @@ x = [[0.05, 2.05, 4.05, 6.05, 8.05, 10.05, 12.05], [0.3, 2.3, 4.3, 6.3, 8.3, 10.
 colors = ['red', 'orange', 'green', 'blue', 'gray', 'black']
 pattern_category = ['FACE', 'HOUSE', 'CAR', 'FLOWER', 'HUMAN', 'ROCKET']
 
-max_lim = 0.2
+max_lim = 0.5
 # which labels to put to these positions
 my_xticks = []
 for num_t in range(num_test_hyp):
@@ -362,10 +362,10 @@ given_part = 30
 num_classes = 6
 
 # plot final drawing only
-# fileformat = '.pdf'
-# traj_lengths_to_plot=[90]
-# # for video animation
 fileformat = '.pdf'
+# # for video animation
+# traj_lengths_to_plot=[90]
+# fileformat = '.png'
 
 image_idx_start = 0 # required if different lengths should be plot for making a video
 # traj_lengths_to_plot= np.concatenate((np.arange(num_timesteps), np.tile(90, (200,))))
