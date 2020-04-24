@@ -1,4 +1,4 @@
-# drawingcompletion: A predictive coding account for cognition in human children and chimpanzees: A case study of drawing #
+# drawingcompletion: A predictive coding account for drawing ability of human children and chimpanzees #
 
 ## Overview ##
 
