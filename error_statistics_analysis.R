@@ -6,27 +6,8 @@ error_data = read.table("results/evaluation/final_0.01-100_6x7/inference-corresp
 
 print("error of new part")
 
-h1 = 0.001 lmer(errNewBest ~ H + (1|netId), data=error_data_part, REML=FALSE)
-none.lme = lmer(errNewBest ~ 1 + (1|netId), data=error_data_part, REML=FALSE)
-summary(dist.lme)
 #print(anova(dist.lme, none.lme))
-h1 = 100
-print("-------------------")
-print(h1)
-error_data_part = error_data %>% filter(H==1 | H==h1)
-dist.lme = lmer(errNewBest ~ H + (1|netId), data=error_data_part, REML=FALSE)
-none.lme = lmer(errNewBest ~ 1 + (1|netId), data=error_data_part, REML=FALSE)
-summary(dist.lme)
-#print(anova(dist.lme, none.lme))
-h1 = 1000
-print("-------------------")
-print(h1)
-error_data_part = error_data %>% filter(H==1 | H==h1)
-dist.lme = lmer(errNewBest ~ H + (1|netId), data=error_data_part, REML=FALSE)
-none.lme = lmer(errNewBest ~ 1 + (1|netId), data=error_data_part, REML=FALSE)
-summary(dist.lme)
-#print(anova(dist.lme, none.lme))
-
+h1 = 0.001
 print("-------------------")
 print(h1)
 error_data_part = error_data %>% filter(H==1 | H==h1)
