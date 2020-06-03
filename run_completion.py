@@ -26,18 +26,18 @@ else:
 
 # if defined, this is the name of a subfolder of results/training where the trained networks to be used here are located
 #data_set_name = "example"
-data_set_name = "final_0.01-100_6x7_mse"#"tmpComp1-training-set"#"training-2020-02-new-completion"#"training-2020-03_noise0.01"#test-set"
+data_set_name = "final_0.01-100_6x7"#"tmpComp1-training-set"#"training-2020-02-new-completion"#"training-2020-03_noise0.01"#test-set"
 #data_set_name = "2019-11-all-test-set"
 
 # which training parameter conditions to check
-condition_directories = ['0.01'] #, 0.01 0.1 10
+condition_directories = ['1']
 # which hyp_prior condition to use for testing:
-test_hyp_priors = [0.01]
+test_hyp_priors = [1]
 
 # which value for σ2_sensor should be assumed if no external input is available (affects amount of randomness of drawing in hypo-prior condition)
-high_sensory_variance = 50
+high_sensory_variance = np.inf
 
-used_measure = 'mse'
+used_measure = 'dtw'
 
 # trajectory data
 training_data_file = "data_generation/drawing-data-sets/drawings-191105-6x3-test.npy"#-drawings.npy"
@@ -155,18 +155,6 @@ for current_r in range(len(run_directories)):
                         final_res[curr_class, reduced_time_steps_list.index(reduced_time_steps)].append(cuda.to_cpu(res[curr_class,:]))
                         final_uh_history[curr_class, reduced_time_steps_list.index(reduced_time_steps)].append(cuda.to_cpu(u_h_history[curr_class,:]))
 
-                        # for later evaluation, store parameters
-                        if is_selection_mode == 'inference':
-                            # results_path is the folder with the inference results
-                            final_results_path[curr_class, reduced_time_steps_list.index(reduced_time_steps)].append(results_path)
-
-                            # store the corresponding networks
-                            dest = results_dir + "/inference_networks/"
-                            pathlib.Path(dest).mkdir(parents=True, exist_ok=True)
-                            copy_tree(results_path, dest + results_path.split('/')[-1])
-                            # and delete the old network at the old location
-                            shutil.rmtree(results_path)
-
                         generated_trajectory = res[curr_class,:].reshape((-1,model.num_io))
                         correct_trajectory = input_traj[curr_class,:].reshape((-1,model.num_io))
                         traj_vis_to_corr = distance_measure(correct_trajectory[1:reduced_time_steps,:], generated_trajectory[0:reduced_time_steps-1,:], method=used_measure)
@@ -244,3 +232,16 @@ for current_r in range(len(run_directories)):
                 np.save(os.path.join(results_dir, 'final-new_best_class-' + str(hyp_prior) + '_mode-' + str(is_selection_mode) + '.npy'), final_new_best_class)
                 np.save(os.path.join(results_dir, 'final-uh-history-' + str(hyp_prior) + '_mode-' + str(is_selection_mode) + '.npy'), final_uh_history)
                 np.save(os.path.join(results_dir, 'final-inferred-is-' + str(hyp_prior) + '_mode-' + str(is_selection_mode) + '.npy'), final_inferred_is)
+                
+                # for later evaluation, store parameters
+                if is_selection_mode == 'inference':
+                    # results_path is the folder with the inference results
+                    final_results_path[curr_class, reduced_time_steps_list.index(reduced_time_steps)].append(results_path)
+
+                    # store the corresponding networks
+                    dest = results_dir + "/inference_networks/"
+                    pathlib.Path(dest).mkdir(parents=True, exist_ok=True)
+                    copy_tree(results_path, dest + results_path.split('/')[-1])
+                    # and delete the old network at the old location
+                    shutil.rmtree(results_path)
+

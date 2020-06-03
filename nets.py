@@ -1,5 +1,6 @@
 import os
 import sys
+import math
 
 import chainer
 from chainer.backends import cuda
@@ -236,11 +237,14 @@ class SCTRNN(chainer.Chain):
                 input_var = chainer.Variable(xp.tile(xp.asarray(xp.float32([self.external_signal_variance])), (x.shape[0],x.shape[1])))
 
             ### Bayesian inference ###
-
-            # standard deviation of BI signal
-            sigma_BI = xp.sqrt(xp.divide(xp.multiply(input_var.array, pred_var.array), (input_var.array + pred_var.array)))
-            # mean of BI signal
-            mu_BI = xp.power(sigma_BI, 2) * (xp.divide(pred_mean.array, pred_var.array) + xp.divide(input_mean.array, input_var.array))
+            if np.any(np.isinf(input_var.array)):
+                sigma_BI = np.sqrt(pred_var.array)
+                mu_BI = pred_mean.array
+            else:
+                # standard deviation of BI signal
+                sigma_BI = xp.sqrt(xp.divide(xp.multiply(input_var.array, pred_var.array), (input_var.array + pred_var.array)))
+                # mean of BI signal
+                mu_BI = xp.power(sigma_BI, 2) * (xp.divide(pred_mean.array, pred_var.array) + xp.divide(input_mean.array, input_var.array))
 
             # sample from posterior distribution to get new input for the network
             if self.add_BI_variance:

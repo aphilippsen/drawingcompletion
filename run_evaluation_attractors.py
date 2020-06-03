@@ -12,10 +12,20 @@ reduced_time_steps = 30
 add_BI_variance = True
 num_classes = 6
 # which of the training networks should be used
-evaluate_runs = np.arange(10)
+evaluate_runs = list(np.arange(10))
+
+# where to find the training networks
+head_directory = "./results"
+data_set_name = 'final_0.01-100_6x7'
+
+training_dir = os.path.join(head_directory, "training/"+data_set_name)
+eval_dir = os.path.join(head_directory, "evaluation/"+data_set_name)
+
+plot_dir = os.path.join(eval_dir, "attractors-dtw-face")
+pathlib.Path(plot_dir).mkdir(parents=True, exist_ok=True)
 
 # indices of which pattern should be interpolated with which other pattern
-indices_pattern1 = [1]
+indices_pattern1 = [0] # 0: FACE, 1: HOUSE etc.exi
 indices_pattern2 = np.arange(num_classes)
 num_comparison_patterns = np.min([num_classes-1, len(indices_pattern2)])
 
@@ -25,18 +35,7 @@ condition_directories = ['0.001', '1', '100']
 test_hyp_priors =  [0.001, 1, 100]
 
 # which value for σ2_sensor should be assumed if no external input is available (affects amount of randomness of drawing in hypo-prior condition)
-high_sensory_variance = 50
-
-data_set_name = 'final_0.01-100_6x7'
-
-# where to find the training networks
-head_directory = "./results"
-
-training_dir = os.path.join(head_directory, "training/"+data_set_name)
-eval_dir = os.path.join(head_directory, "evaluation/"+data_set_name)
-
-plot_dir = os.path.join(eval_dir, "attractors-dtw-house")
-pathlib.Path(plot_dir).mkdir(parents=True, exist_ok=True)
+high_sensory_variance = np.inf
 
 interps = np.arange(10,-1, -1)/10
 

@@ -300,7 +300,7 @@ for training_hyp in training_hyp_all:
 
         colors = ['red', 'orange', 'green', 'blue', 'gray', 'black']
         pattern_category = ['FACE', 'HOUSE', 'CAR', 'FLOWER', 'HUMAN', 'ROCKET']
-        to_plot_indices = [0, 1, 2,3,4,5] # only subset of patterns to make plots clearer
+        to_plot_indices = [0, 1, 3] # [0, 1, 2, 3, 4, 5] # only subset of patterns to make plots clearer
 
         # 2d
         fig = plt.figure('Trained and inferred initial states (2d)', figsize=(20,20))

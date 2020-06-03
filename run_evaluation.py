@@ -20,7 +20,6 @@ mode = 'inference'
 
 # which testing H to check
 test_hyp_all = ['0.001', '0.01', '0.1', '1', '10', '100', '1000'] 
-#test_hyp_all = ['0.001', '0.01', '0.1', '1', '1', '1', '1']
 
 num_runs = 10 # how often the experiment was independently conducted
 num_inferences = 3 # how many test inferences have been performed in each run
@@ -196,7 +195,7 @@ x = [[0.05, 2.05, 4.05, 6.05, 8.05, 10.05, 12.05], [0.3, 2.3, 4.3, 6.3, 8.3, 10.
 colors = ['red', 'orange', 'green', 'blue', 'gray', 'black']
 pattern_category = ['FACE', 'HOUSE', 'CAR', 'FLOWER', 'HUMAN', 'ROCKET']
 
-max_lim = 0.5
+max_lim = 0.6
 # which labels to put to these positions
 my_xticks = []
 for num_t in range(num_test_hyp):
