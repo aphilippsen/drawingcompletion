@@ -348,6 +348,7 @@ class SCTRNN(chainer.Chain):
                     wpe = np.empty((self.initial_states.W.shape[0],), dtype=object)
                     res_posterior = np.empty((self.initial_states.W.shape[0],), dtype=object)
                     is_idx=0
+                    # try all available initial states
                     for inis in self.initial_states.W.array:
                         curr_extinp = xp.reshape(external_input[traj_idx,:], (1,external_input.shape[1]))
 

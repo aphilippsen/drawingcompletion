@@ -4,19 +4,19 @@ import matplotlib.pyplot as plt
 import pathlib
 
 #data_set_name = 'example'
-data_set_name = "final_0.01-100_6x7"#"tmpComp1000"#-training-set" #"training-2020-02-new-completion" # "tmp"#"training-2020-03_noise0.01"#test-set"
-#data_set_name = "2019-11-all-test-set"
+data_set_name = "final_0.01-100_6x7"
 
 # Evaluation of the inference results
-# when train and test hyp-prior vary!
 
 # data for plotting the correct trajectories
-training_data_file = "data_generation/drawing-data-sets/drawings-191105-6x3-test.npy"#data_generation/drawing-data-sets/drawings-191105-6-drawings.npy"
+training_data_file = "data_generation/drawing-data-sets/drawings-191105-6x3-test.npy"
 x_train = np.float32(np.load(training_data_file))
 
 eval_head_dir = './results/completion/' + data_set_name
 mode = 'inference'
 # mode = 'best'
+# mode = 'zero'
+# mode = 'mean'
 
 # which testing H to check
 test_hyp_all = ['0.001', '0.01', '0.1', '1', '10', '100', '1000'] 
