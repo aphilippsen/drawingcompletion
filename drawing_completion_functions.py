@@ -43,12 +43,12 @@ def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection
     # use input only until ... time steps
     delete_from = reduced_time_steps+1
     if gpu_id > -1:
-        input_traj_cut = chainer.cuda.to_gpu(xp.copy(chainer.cuda.to_cpu(input_traj.reshape((-1,model.num_io)))))
+        input_traj_zero = chainer.cuda.to_gpu(xp.copy(chainer.cuda.to_cpu(input_traj.reshape((-1,model.num_io)))))
     else:
-        input_traj_cut = xp.copy(input_traj.reshape((-1,model.num_io)))
-    for t in range(0, input_traj_cut.shape[0], time_steps):
-        input_traj_cut[t+delete_from:t+time_steps,:] = 0
-    input_traj_cut = input_traj_cut.reshape((input_traj.shape[0],-1))
+        input_traj_zero = xp.copy(input_traj.reshape((-1,model.num_io)))
+    for t in range(0, input_traj_zero.shape[0], time_steps):
+        input_traj_zero[t+delete_from:t+time_steps,:] = 0
+    input_traj_zero = input_traj_zero.reshape((input_traj.shape[0],-1))
 
     results_path = '.'
     if not isinstance(is_selection_mode, str):
@@ -63,7 +63,9 @@ def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection
 
     elif is_selection_mode == 'best':
         # init_state = np.reshape(model.initial_states.W.array[0,:], (1, model.num_c))
-        res, resv, resm, pe, wpe, respost = model.generate('best', time_steps, external_input = input_traj_cut, add_variance_to_output = 0, hyp_prior = 1, external_signal_variance = external_signal_var_testing, x_start = x_start)
+        
+        input_traj_cut = input_traj_zero[:,0:model.num_io*reduced_time_steps]
+        res, resv, resm, pe, wpe, respost = model.generate('best', reduced_time_steps, external_input = input_traj_cut, add_variance_to_output = 0, hyp_prior = 1, external_signal_variance = external_signal_var_testing, x_start = x_start)
 
         init_state = model.initial_states.W.array[model.used_is_idx,:] #xp.reshape(model.initial_states.W.array[model.used_is_idx,:], (len(model.used_is_idx), model.num_c))
 
@@ -84,7 +86,7 @@ def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection
 
     # generation with the inferred initial states, first 30 timesteps with input, after that without input
     xp.random.seed(seed=1)
-    res, resv, resm, pe, wpe, u_h_history, respost = model.generate(init_state, time_steps, external_input = input_traj_cut, add_variance_to_output = 0, hyp_prior = hyp_prior, external_signal_variance = external_signal_var_testing, additional_output='activations', x_start = x_start)
+    res, resv, resm, pe, wpe, u_h_history, respost = model.generate(init_state, time_steps, external_input = input_traj_zero, add_variance_to_output = 0, hyp_prior = hyp_prior, external_signal_variance = external_signal_var_testing, additional_output='activations', x_start = x_start)
 
 
     if not plottingFile is None:
