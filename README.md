@@ -8,7 +8,7 @@ The effect of strong or weak reliance on priors is investigated to evaluate pote
 
 More details about the experiment and the scientific foundations can be found in the following papers:
 
-* Anja Philippsen and Yukie Nagai. "A predictive coding account for cognition in human children and chimpanzees: A case study of drawing." (under review)
+* Anja Philippsen and Yukie Nagai. "A predictive coding account for cognition in human children and chimpanzees: A case study of drawing." IEEE Transactions on Cognitive and Developmental Systems (2020).
 
 * Anja Philippsen and Yukie Nagai. "A predictive coding model of representational drawing in human children and chimpanzees." 2019 Joint IEEE 9th International Conference on Development and Learning and Epigenetic Robotics (ICDL-EpiRob). IEEE, 2019.
 
