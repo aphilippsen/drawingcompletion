@@ -18,7 +18,7 @@ The model was also used in the following publication:
 
 ## Documentation ##
 
-The code runs with Python3 and is implemented using the CHAINER deep learning framework.
+The code runs with Python3 and is implemented using the [CHAINER deep learning framework](https://chainer.org/).
 
 ### Installation ###
 
