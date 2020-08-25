@@ -211,7 +211,7 @@ class SCTRNN(chainer.Chain):
         from chainer.backends import cuda
         xp = cuda.get_array_module(self.initial_states.W)
 
-        x = chainer.Variable(x_data)
+        x = chainer.Variable(x_data.reshape((1,-1)))
 
         if not self.current_y.array is None:
 
