@@ -85,7 +85,7 @@ def complete_drawing(model, params, input_traj, reduced_time_steps, is_selection
     model.add_BI_variance = add_BI_variance
 
     # generation with the inferred initial states, first 30 timesteps with input, after that without input
-    xp.random.seed(seed=1)
+    # xp.random.seed(seed=1)
     res, resv, resm, pe, wpe, u_h_history, respost = model.generate(init_state, time_steps, external_input = input_traj_zero, add_variance_to_output = 0, hyp_prior = hyp_prior, external_signal_variance = external_signal_var_testing, additional_output='activations', x_start = x_start)
 
 
