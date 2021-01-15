@@ -44,7 +44,7 @@ A GUI which allows you to draw (left mouse button) and store the created drawing
 Script that was used to preprocess the trajectories to equal length and to summarize them in a data sets file to be used for training etc. Code has to be adapted when adding new drawings.
 Two *npy* files are generated, one containing the trajectories and one containing the corresponding class labels.
 
-Drawing sets which are ready to use can be found in *data_generation/drawing-data-sets/*.
+Preprocessed drawing sets which are ready to use can be found in *data_generation/drawing-data-sets/*.
 
 #### 2. Training ####
 

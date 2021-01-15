@@ -525,9 +525,10 @@ class NetworkParameterSetting:
                 continue
             elif key == 'hyp_prior':
                 self.hyp_prior = val
+                continue
             elif key == 'external_signal_variance':
                 self.external_signal_variance = val
-            
+                continue
             # normalization factors for input data
             elif key == 'norm_offset':
                 self.norm_offset = val
