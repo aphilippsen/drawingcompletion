@@ -30,7 +30,7 @@ from utils.normalize import normalize, range2norm, norm2range
 from utils.visualization import plot_results, plot_pca_activations
 
 
-def infer_initial_states_sctrnn(params, old_model, testing_data, num_timesteps = 0, epochs = 2000, start_is = 'mean', error_computation = 'standard', single_recognition = False, hyp_prior = None, external_signal_variance = -1, x_start = None, use_init_state_loss = True):
+def infer_initial_states_sctrnn(params, old_model, testing_data, num_timesteps = 0, epochs = None, start_is = 'mean', error_computation = 'standard', single_recognition = False, hyp_prior = None, external_signal_variance = -1, x_start = None, use_init_state_loss = True):
 
     # each trajectory is handled as a separate "class", infer initial states per class
     num_classes = testing_data.shape[0]
@@ -94,6 +94,11 @@ def infer_initial_states_sctrnn(params, old_model, testing_data, num_timesteps =
     params.learn_weights = False
     params.learn_bias = False
     params.epochs = epochs
+    max_epochs = 500
+    if params.epochs:
+        epoch_array_size = params.epochs
+    else:
+        epoch_array_size = max_epochs
 
     model = SCTRNN(params.num_io, params.num_c, params.tau_c, num_classes, init_state_init = params.init_state_init, init_state_learning = params.learn_init_states, weights_learning = params.learn_weights, bias_learning = params.learn_bias, tau_learning = params.learn_tau, pretrained_model = old_model)
     #model.hyp_prior = params.hyp_prior
@@ -134,12 +139,12 @@ def infer_initial_states_sctrnn(params, old_model, testing_data, num_timesteps =
     optimizer.setup(model)
     #optimizer.add_hook(chainer.optimizer.WeightDecay(0))
 
-    history_init_state_var = np.zeros((epochs+1,))
+    history_init_state_var = np.zeros((epoch_array_size+1,))
     history_init_state_var[0] = np.mean(np.var(model.initial_states.W.array,axis=0))
     history_generation_error_proactive = np.empty((num_classes,), dtype=object)
     history_generation_error_reactive = np.empty((num_classes,), dtype=object)
-    history_training_error = np.zeros((epochs+1,))
-    history_training_variance_estimation = np.zeros((epochs+1, num_classes))
+    history_training_error = np.zeros((epoch_array_size+1,))
+    history_training_variance_estimation = np.zeros((epoch_array_size+1, num_classes))
 
     history_initial_states = []
 
@@ -181,7 +186,7 @@ def infer_initial_states_sctrnn(params, old_model, testing_data, num_timesteps =
     # tmp_epoch_marker = 0
     # conv_eval_interval = 1000 # the length of the interval to consider for determining convergence
 
-    for epoch in range(1, params.epochs + 1):
+    for epoch in range(1, epoch_array_size + 1):
         epochStart = time.time()
 
         outv = np.zeros((num_timesteps,))
@@ -372,6 +377,11 @@ def infer_initial_states_sctrnn(params, old_model, testing_data, num_timesteps =
             plt.close()
 
         history_initial_states.append(model.initial_states.W.array.copy())
+        
+        # if no epoch number is decided, stop when error is below a threshold
+        if not epochs:
+            if error < 0.01:
+                break
 
     save_network(save_dir, params, model, model_filename = "network-final")
 

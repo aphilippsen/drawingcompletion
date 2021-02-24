@@ -10,7 +10,6 @@ import shutil
 # local imports
 from nets import SCTRNN, make_initial_state_zero, make_initial_state_random, NetworkParameterSetting, save_network, load_network
 from drawing_completion_functions import complete_drawing
-from inference import infer_initial_states_sctrnn
 from utils.visualization import plot_multistroke
 from utils.distance_measures import distance_measure
 
@@ -139,7 +138,7 @@ for current_r in range(len(run_directories)):
             print("Skip already existing results for " + results_dir)
             continue
 
-        # infer all three classes at once
+        # infer all classes at once
         r=0
         for p in range(0, num_classes*drawings_per_class, num_classes):
             input_traj = x_train[p:p+num_classes,:]
@@ -160,7 +159,7 @@ for current_r in range(len(run_directories)):
                     traj_vis_to_corr = distance_measure(correct_trajectory[1:reduced_time_steps,:], generated_trajectory[0:reduced_time_steps-1,:], method=used_measure)
 
                     all_trajectories = x_train[p:p+num_classes,:]
-                    traj_vis_to_best = 100 # some high PE for init
+                    traj_vis_to_best = np.inf # some high PE for init
                     curr_largest_PE_vis = 0
                     for i in range(all_trajectories.shape[0]):
                         # compare to every trajectory
@@ -179,7 +178,7 @@ for current_r in range(len(run_directories)):
                     traj_new_to_corr = distance_measure(correct_trajectory[reduced_time_steps+1:,:], generated_trajectory[reduced_time_steps:-1,:], method=used_measure)
 
                     # to any (the best) trajectory
-                    traj_new_to_best = 100 # some high PE for init
+                    traj_new_to_best = np.inf # some high PE for init
                     curr_largest_PE_new = 0
                     for i in range(all_trajectories.shape[0]):
                         # compare to every trajectory
