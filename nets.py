@@ -237,8 +237,8 @@ class SCTRNN(chainer.Chain):
                 input_var = chainer.Variable(xp.tile(xp.asarray(xp.float32([self.external_signal_variance])), (x.shape[0],x.shape[1])))
 
             ### Bayesian inference ###
-            if np.any(np.isinf(input_var.array)):
-                sigma_BI = np.sqrt(pred_var.array)
+            if xp.any(xp.isinf(input_var.array)):
+                sigma_BI = xp.sqrt(pred_var.array)
                 mu_BI = pred_mean.array
             else:
                 # standard deviation of BI signal
