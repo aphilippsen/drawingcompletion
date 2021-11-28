@@ -16,6 +16,12 @@ The model was also used in the following publication:
 
 * Daniel Oliva, Anja Philippsen, and Yukie Nagai. "How development in the bayesian brain facilitates learning." 2019 Joint IEEE 9th International Conference on Development and Learning and Epigenetic Robotics (ICDL-EpiRob). IEEE, 2019.
 
+Furthermore, the code is available for reproducing the results of the following publication:
+
+* Anja Philippsen, Sho Tsuji, Yukie Nagai. "Simulating developmental and individual differences of drawing behavior in children using a predictive-coding model." (Under Review), 2021.
+
+
+
 ## Documentation ##
 
 The code runs with Python3 and is implemented using the [CHAINER deep learning framework](https://chainer.org/).
@@ -95,3 +101,12 @@ Measuring distance between trajectories via Dynamic Time Warping.
 **error_statistics_analysis.R**
 R script for testing statistical significances of the error differences in different H conditions.
 
+## Simulating developmental and individual differences ##
+
+Relevant files:
+
+**results/training/final_0.01-100_6x7**
+Trained networks that were used for the analysis. Only networks trained with H=1 are used for the analysis.
+
+**hyper_hypo_prior_input.py**
+This script investigates the influence of various values of H_prior (H) and H_sensor (sigma) on the drawing behavior of the model.
